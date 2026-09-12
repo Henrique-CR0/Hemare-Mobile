@@ -14,8 +14,9 @@ val HemareSuperficie = Color(0xFFFFFFFF)
 val HemareTextoEscuro = Color(0xFF2B0D10)
 val HemareTextoSuave = Color(0xFF8A6B6F)
 
-// Variantes para o tema escuro
-val HemareFundoEscuro = Color(0xFF1A0E0F)
-val HemareSuperficieEscura = Color(0xFF2B1315)
-val HemareTextoClaro = Color(0xFFF5E4E6)
-val HemareTextoSuaveEscuro = Color(0xFFD9B3B7)
+// Variantes para o tema escuro (paleta oficial da arte: fundo neutro quase preto,
+// não um preto avermelhado — o vermelho fica só no cabeçalho e nos acentos)
+val HemareFundoEscuro = Color(0xFF121212)
+val HemareSuperficieEscura = Color(0xFF1E1E1E)
+val HemareTextoClaro = Color(0xFFF5F5F5)
+val HemareTextoSuaveEscuro = Color(0xFFA0A0A0)

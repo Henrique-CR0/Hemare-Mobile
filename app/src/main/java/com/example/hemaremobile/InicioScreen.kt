@@ -1,108 +1,104 @@
 package com.example.hemaremobile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bloodtype
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.hemaremobile.navigation.RotasLista
-import com.example.hemaremobile.ui.theme.HemareRosaClaro
+import com.example.hemaremobile.ui.theme.HemareAmarelo
 import com.example.hemaremobile.ui.theme.HemareVermelho
-
-private data class AtalhoInicio(val emoji: String, val titulo: String, val descricao: String, val rota: String)
-
-private val atalhos = listOf(
-    AtalhoInicio("🗺️", "Onde doar", "Hemocentros e hospitais perto de você.", RotasLista.ONDE_DOAR),
-    AtalhoInicio("📖", "Guia da doação", "Antes, durante e depois: como se preparar.", RotasLista.GUIA),
-    AtalhoInicio("💬", "Mitos e verdades", "Dúvidas comuns, esclarecidas com fontes oficiais.", RotasLista.MITOS)
-)
+import com.example.hemaremobile.ui.theme.HemareVermelhoEscuro
 
 @Composable
-fun InicioScreen(onAtalhoClick: (String) -> Unit) {
-    LazyColumn(
+fun InicioScreen() {
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 20.dp)
+            .fillMaxSize()
+            .background(HemareVermelho)
+            .statusBarsPadding()
+            .padding(24.dp)
     ) {
-        item {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(HemareVermelho)
-                    .padding(24.dp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(imageVector = Icons.Filled.Bloodtype, contentDescription = null, tint = Color.White)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = "Hemare", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = HemareVermelhoEscuro.copy(alpha = 0.35f)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
             ) {
-                Text(
-                    text = "🩸 Hemare",
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium
+                Icon(
+                    imageVector = Icons.Outlined.FavoriteBorder,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.height(16.dp)
                 )
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                Text(
-                    text = "Sua doação pode salvar até 4 vidas",
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    text = "Uma única doação pode salvar até quatro vidas. Doe sangue, doe esperança.",
-                    color = HemareRosaClaro,
-                    fontSize = 16.sp
-                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = "Doar sangue é doar vida", color = Color.White, fontSize = 13.sp)
             }
         }
 
-        items(atalhos) { atalho ->
-            Card(
-                onClick = { onAtalhoClick(atalho.rota) },
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = buildAnnotatedString {
+                append("Sua doação pode salvar ")
+                withStyle(SpanStyle(color = HemareAmarelo)) { append("até 4 vidas") }
+            },
+            color = Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            lineHeight = 34.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 8.dp)
-            ) {
-                Row(modifier = Modifier.padding(16.dp)) {
-                    Text(text = atalho.emoji, style = MaterialTheme.typography.titleLarge)
-                    Column(modifier = Modifier.padding(start = 14.dp)) {
-                        Text(
-                            text = atalho.titulo,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = atalho.descricao,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
-                }
-            }
+                    .fillMaxHeight()
+                    .width(3.dp)
+                    .background(HemareAmarelo)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Uma única doação pode salvar até quatro vidas. Doe sangue, doe esperança.",
+                color = Color.White,
+                fontSize = 15.sp,
+                lineHeight = 22.sp
+            )
         }
     }
 }
@@ -110,5 +106,5 @@ fun InicioScreen(onAtalhoClick: (String) -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun InicioScreenPreview() {
-    InicioScreen(onAtalhoClick = {})
+    InicioScreen()
 }

@@ -3,15 +3,17 @@ package com.example.hemaremobile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -20,134 +22,133 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.hemaremobile.ui.theme.HemareVermelhoAcao
 
 @Composable
 fun ConfiguracaoScreen(viewModel: ConfiguracaoViewModel) {
     val state by viewModel.uiState.collectAsState()
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Text(
-                text = "Configuração",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
+    Column(modifier = Modifier.fillMaxSize()) {
+        CabecalhoVermelho(titulo = "Configuração")
 
-        item {
-            SecaoConfig(titulo = "Preferências") {
-                ItemSwitch(
-                    titulo = "Tema escuro",
-                    descricao = "Ativa o modo escuro em todo o app.",
-                    checked = state.temaEscuro,
-                    onCheckedChange = viewModel::alternarTemaEscuro
-                )
-                ItemSwitch(
-                    titulo = "Notificações",
-                    descricao = "Avisos sobre campanhas e urgências de doação.",
-                    checked = state.notificacoesAtivas,
-                    onCheckedChange = viewModel::alternarNotificacoes
-                )
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    RotuloSecao("Preferências")
+                    ItemSwitch(
+                        icone = Icons.Filled.DarkMode,
+                        titulo = "Tema escuro",
+                        checked = state.temaEscuro,
+                        onCheckedChange = viewModel::alternarTemaEscuro
+                    )
+                    ItemSwitch(
+                        icone = Icons.Filled.Notifications,
+                        titulo = "Notificações",
+                        checked = state.notificacoesAtivas,
+                        onCheckedChange = viewModel::alternarNotificacoes
+                    )
+                }
             }
-        }
 
-        item {
-            SecaoConfig(titulo = "Sobre o app") {
-                ItemTexto("Versão", "0.1.0 (presentation layer)")
-                ItemTexto(
-                    "Missão do Hemare",
-                    "Conectar doadores de sangue a hemocentros e hospitais, incentivando a doação voluntária e regular."
-                )
-                ItemTexto(
-                    "Fontes oficiais",
-                    "Ministério da Saúde, Fundação Hemope e Fundação Pró-Sangue."
-                )
-                ItemTexto("Autor", "Henrique Carneiro — github.com/Henrique-CR0")
-            }
-        }
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    RotuloSecao("Sobre o app")
+                    LinhaValor(titulo = "Versão", valor = "1.0.0")
 
-        item {
-            SecaoConfig(titulo = "Outros") {
-                ItemTexto("Política de privacidade", "Em breve")
-                ItemTexto("Termos de uso", "Em breve")
-                ItemTexto("Fale conosco", "contato@hemare.app")
+                    Text(
+                        text = "Desenvolvido por",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Desenvolvedor(nome = "Henrique Ribeiro", email = "henrique@novaroma.edu.br")
+                    Desenvolvedor(nome = "Lucas Vieitez", email = "lucas@novaroma.edu.br")
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SecaoConfig(titulo: String, conteudo: @Composable ColumnScope.() -> Unit) {
-    Column {
-        Text(
-            text = titulo,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(modifier = Modifier.padding(4.dp), content = conteudo)
-        }
-    }
+private fun RotuloSecao(texto: String) {
+    Text(
+        text = texto,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
 
 @Composable
 private fun ItemSwitch(
+    icone: ImageVector,
     titulo: String,
-    descricao: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = titulo,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = descricao,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 2.dp)
-            )
-        }
+        Icon(
+            imageVector = icone,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = titulo,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .padding(start = 12.dp)
+                .weight(1f)
+        )
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
 @Composable
-private fun ItemTexto(titulo: String, valor: String) {
-    Column(modifier = Modifier.padding(12.dp)) {
+private fun LinhaValor(titulo: String, valor: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
         Text(
             text = titulo,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = valor,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 2.dp)
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun Desenvolvedor(nome: String, email: String) {
+    Column {
+        Text(
+            text = nome,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = email,
+            fontSize = 13.sp,
+            color = HemareVermelhoAcao,
+            modifier = Modifier.padding(top = 1.dp)
         )
     }
 }
