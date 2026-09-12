@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.hemaremobile.navigation.HemareApp
 import com.example.hemaremobile.ui.theme.HemareMobileTheme
@@ -14,12 +16,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val configuracaoViewModel: ConfiguracaoViewModel = viewModel()
+            val configuracaoState by configuracaoViewModel.uiState.collectAsState()
 
-            // O visual do Hemare (fundo escuro + destaques vermelhos) é fixo por
-            // enquanto — o switch "Tema escuro" em Configuração ainda não liga
-            // a nada (ver observação do usuário: nav/telas não precisam ter
-            // funcionalidade real ainda).
-            HemareMobileTheme(darkTheme = true) {
+            HemareMobileTheme(darkTheme = configuracaoState.temaEscuro) {
                 HemareApp(configuracaoViewModel = configuracaoViewModel)
             }
         }

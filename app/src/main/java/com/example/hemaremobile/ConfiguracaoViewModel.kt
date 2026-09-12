@@ -7,13 +7,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class ConfiguracaoUiState(
-    val temaEscuro: Boolean = false,
+    val temaEscuro: Boolean = true,
     val notificacoesAtivas: Boolean = true
 )
 
 /**
  * Presentation Layer: preferências guardadas só em memória (StateFlow),
  * sem persistência real — isso é responsabilidade da Data layer futura.
+ * O tema escuro começa ativado (visual padrão do Hemare).
  */
 class ConfiguracaoViewModel : ViewModel() {
 
