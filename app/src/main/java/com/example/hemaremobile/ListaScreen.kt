@@ -49,65 +49,66 @@ private val itensLista = listOf(
 
 @Composable
 fun ListaScreen(onItemClick: (String) -> Unit) {
-    Column(modifier = Modifier.fillMaxSize()) {
-        CabecalhoVermelho(titulo = "Aprenda sobre doação")
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(bottom = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        item {
+            CabecalhoVermelho(titulo = "Aprenda sobre doação")
+        }
 
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            items(itensLista) { item ->
-                Card(
-                    onClick = { onItemClick(item.rota) },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    modifier = Modifier.fillMaxWidth()
+        items(itensLista) { item ->
+            Card(
+                onClick = { onItemClick(item.rota) },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = HemareRosaClaro,
+                        modifier = Modifier.size(44.dp)
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = HemareRosaClaro,
-                            modifier = Modifier.size(44.dp)
-                        ) {
-                            Icon(
-                                imageVector = item.icone,
-                                contentDescription = null,
-                                tint = HemareVermelho,
-                                modifier = Modifier.padding(10.dp)
-                            )
-                        }
-                        Column(
-                            modifier = Modifier
-                                .padding(start = 14.dp)
-                                .weight(1f)
-                        ) {
-                            Text(
-                                text = item.titulo,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = item.descricao,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(top = 2.dp)
-                            )
-                        }
                         Icon(
-                            imageVector = Icons.Filled.ChevronRight,
+                            imageVector = item.icone,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            tint = HemareVermelho,
+                            modifier = Modifier.padding(10.dp)
                         )
                     }
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 14.dp)
+                            .weight(1f)
+                    ) {
+                        Text(
+                            text = item.titulo,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = item.descricao,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Filled.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

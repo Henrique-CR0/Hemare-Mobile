@@ -32,48 +32,53 @@ import com.example.hemaremobile.ui.theme.HemareVermelhoAcao
 fun ConfiguracaoScreen(viewModel: ConfiguracaoViewModel) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        CabecalhoVermelho(titulo = "Configuração")
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(bottom = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        item {
+            CabecalhoVermelho(titulo = "Configuração")
+        }
 
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background),
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    RotuloSecao("Preferências")
-                    ItemSwitch(
-                        icone = Icons.Filled.DarkMode,
-                        titulo = "Tema escuro",
-                        checked = state.temaEscuro,
-                        onCheckedChange = viewModel::alternarTemaEscuro
-                    )
-                    ItemSwitch(
-                        icone = Icons.Filled.Notifications,
-                        titulo = "Notificações",
-                        checked = state.notificacoesAtivas,
-                        onCheckedChange = viewModel::alternarNotificacoes
-                    )
-                }
+        item {
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                RotuloSecao("Preferências")
+                ItemSwitch(
+                    icone = Icons.Filled.DarkMode,
+                    titulo = "Tema escuro",
+                    checked = state.temaEscuro,
+                    onCheckedChange = viewModel::alternarTemaEscuro
+                )
+                ItemSwitch(
+                    icone = Icons.Filled.Notifications,
+                    titulo = "Notificações",
+                    checked = state.notificacoesAtivas,
+                    onCheckedChange = viewModel::alternarNotificacoes
+                )
             }
+        }
 
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    RotuloSecao("Sobre o app")
-                    LinhaValor(titulo = "Versão", valor = "1.0.0")
+        item {
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                RotuloSecao("Sobre o app")
+                LinhaValor(titulo = "Versão", valor = "1.0.0")
 
-                    Text(
-                        text = "Desenvolvido por",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Desenvolvedor(nome = "Henrique Ribeiro", email = "henrique@novaroma.edu.br")
-                    Desenvolvedor(nome = "Lucas Vieitez", email = "lucas@novaroma.edu.br")
-                }
+                Text(
+                    text = "Desenvolvido por",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Desenvolvedor(nome = "Henrique Ribeiro", email = "henrique@novaroma.edu.br")
+                Desenvolvedor(nome = "Lucas Vieitez", email = "lucas@novaroma.edu.br")
             }
         }
     }
