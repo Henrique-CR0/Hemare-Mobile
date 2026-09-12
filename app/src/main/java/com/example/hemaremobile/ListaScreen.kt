@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -79,38 +78,39 @@ fun ListaScreen(onItemClick: (String) -> Unit) {
 @Composable
 private fun LinhaItemLista(item: ItemLista) {
     Row(
-        modifier = Modifier.padding(14.dp),
+        modifier = Modifier
+            .padding(14.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = HemareRosaClaro,
-            modifier = Modifier.size(44.dp)
-        ) {
-            Icon(
-                imageVector = item.icone,
-                contentDescription = null,
-                tint = HemareVermelho,
-                modifier = Modifier.padding(10.dp)
-            )
-        }
-        Column(
-            modifier = Modifier
-                .padding(start = 14.dp)
-                .weight(1f)
-        ) {
-            Text(
-                text = item.titulo,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = item.descricao,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 2.dp)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = HemareRosaClaro,
+                modifier = Modifier.size(44.dp)
+            ) {
+                Icon(
+                    imageVector = item.icone,
+                    contentDescription = null,
+                    tint = HemareVermelho,
+                    modifier = Modifier.padding(10.dp)
+                )
+            }
+            Column(modifier = Modifier.padding(start = 14.dp)) {
+                Text(
+                    text = item.titulo,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = item.descricao,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
         }
         Icon(
             imageVector = Icons.Filled.ChevronRight,
