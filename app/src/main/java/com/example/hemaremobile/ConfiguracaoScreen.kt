@@ -76,8 +76,8 @@ fun ConfiguracaoScreen(viewModel: ConfiguracaoViewModel) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Desenvolvedor(nome = "Henrique Ribeiro", email = "henrique@novaroma.edu.br")
-                Desenvolvedor(nome = "Lucas Vieitez", email = "lucas@novaroma.edu.br")
+                Desenvolvedor(nome = "Henrique Carneiro Ribeiro", email = "carneiro.ribeiro@novaroma.edu.br")
+                Desenvolvedor(nome = "Lucas Pereira Vietiez", email = "lucas.veietez@novaroma.edu.br")
             }
         }
     }
