@@ -70,47 +70,52 @@ fun ListaScreen(onItemClick: (String) -> Unit) {
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp)
             ) {
-                Row(
-                    modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = HemareRosaClaro,
-                        modifier = Modifier.size(44.dp)
-                    ) {
-                        Icon(
-                            imageVector = item.icone,
-                            contentDescription = null,
-                            tint = HemareVermelho,
-                            modifier = Modifier.padding(10.dp)
-                        )
-                    }
-                    Column(
-                        modifier = Modifier
-                            .padding(start = 14.dp)
-                            .weight(1f)
-                    ) {
-                        Text(
-                            text = item.titulo,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = item.descricao,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
-                    Icon(
-                        imageVector = Icons.Filled.ChevronRight,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                LinhaItemLista(item)
             }
         }
+    }
+}
+
+@Composable
+private fun LinhaItemLista(item: ItemLista) {
+    Row(
+        modifier = Modifier.padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = HemareRosaClaro,
+            modifier = Modifier.size(44.dp)
+        ) {
+            Icon(
+                imageVector = item.icone,
+                contentDescription = null,
+                tint = HemareVermelho,
+                modifier = Modifier.padding(10.dp)
+            )
+        }
+        Column(
+            modifier = Modifier
+                .padding(start = 14.dp)
+                .weight(1f)
+        ) {
+            Text(
+                text = item.titulo,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = item.descricao,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+        }
+        Icon(
+            imageVector = Icons.Filled.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
