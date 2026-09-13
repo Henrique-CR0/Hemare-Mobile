@@ -12,23 +12,37 @@ Este repositório contém a **Presentation Layer** do app: telas navegáveis em 
 - **MVVM** — cada tela com seu `ViewModel` expondo `UiState` (via `StateFlow`)
 - `compileSdk` / `targetSdk` 37, `minSdk` 24 (Android 7.0+)
 
-## Como rodar
+## Como rodar (em qualquer máquina)
 
-### Pré-requisitos
-- [Android Studio](https://developer.android.com/studio) (versão recente, com suporte a Compose)
-- Um emulador Android configurado ou um celular físico com depuração USB ativada
+### 1. Instalar o Android Studio
+Baixe e instale o [Android Studio](https://developer.android.com/studio) (Windows, macOS ou Linux). Ele já vem com o JDK e o Android SDK necessários — não precisa instalar nada disso separadamente. Na primeira abertura, siga o assistente de configuração padrão (ele baixa as ferramentas do SDK sozinho).
 
-### Passo a passo
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/Henrique-CR0/Hemare-Mobile.git
-   ```
-2. Abra a pasta clonada no Android Studio (**File → Open**).
-3. Espere o Gradle sincronizar as dependências (barra de progresso na parte inferior da tela).
-4. Escolha um emulador ou dispositivo no seletor ao lado do botão de play (ex.: "Pixel 10 API 37").
-5. Clique no botão verde de **play (▶)** para compilar e instalar o app.
+### 2. Clonar o repositório
+Com o [Git](https://git-scm.com/downloads) instalado, rode no terminal:
+```bash
+git clone https://github.com/Henrique-CR0/Hemare-Mobile.git
+```
+(Ou baixe o ZIP pelo botão **Code → Download ZIP** na página do repositório, se preferir não usar Git.)
 
-Não é necessário configurar nada além disso — não há backend, chaves de API nem variáveis de ambiente nesta versão.
+### 3. Abrir o projeto
+No Android Studio, vá em **File → Open** e selecione a pasta `Hemare-Mobile` que você acabou de clonar/extrair. Espere o Gradle sincronizar as dependências — aparece uma barra de progresso na parte inferior da janela, e pode demorar alguns minutos na primeira vez (baixando bibliotecas).
+
+### 4. Preparar onde rodar o app
+Você precisa de um emulador Android **ou** um celular físico:
+
+**Opção A — Emulador (não precisa de celular):**
+1. No Android Studio, abra o **Device Manager** (ícone de celular na barra lateral direita, ou **Tools → Device Manager**).
+2. Clique em **Create Device**, escolha um modelo (ex.: Pixel 8) e uma versão do Android (qualquer uma a partir da 7.0 / API 24), e finalize.
+
+**Opção B — Celular físico:**
+1. No celular, ative as **Opções do desenvolvedor** (Configurações → Sobre o telefone → toque 7x em "Número da versão").
+2. Dentro de Opções do desenvolvedor, ative a **Depuração USB**.
+3. Conecte o celular ao computador via USB e aceite a autorização que aparece na tela do celular.
+
+### 5. Rodar
+Escolha o emulador ou dispositivo no seletor ao lado do botão de play (topo do Android Studio) e clique no botão verde **▶**. O app compila, instala e abre sozinho.
+
+Não é necessário configurar chaves de API, variáveis de ambiente ou backend — esta versão funciona inteiramente com dados de exemplo (mock), local no próprio app.
 
 ## Funcionalidades
 
