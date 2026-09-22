@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.hemaremobile.navigation.HemareApp
+import com.example.hemaremobile.navigation.HemareRaiz
 import com.example.hemaremobile.ui.theme.HemareMobileTheme
 
 class MainActivity : ComponentActivity() {
@@ -16,10 +16,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val configuracaoViewModel: ConfiguracaoViewModel = viewModel()
+            val autenticacaoViewModel: AutenticacaoViewModel = viewModel()
             val configuracaoState by configuracaoViewModel.uiState.collectAsState()
 
             HemareMobileTheme(darkTheme = configuracaoState.temaEscuro) {
-                HemareApp(configuracaoViewModel = configuracaoViewModel)
+                HemareRaiz(
+                    configuracaoViewModel = configuracaoViewModel,
+                    autenticacaoViewModel = autenticacaoViewModel
+                )
             }
         }
     }

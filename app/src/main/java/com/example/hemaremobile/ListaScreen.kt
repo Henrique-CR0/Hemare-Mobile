@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
@@ -41,6 +42,7 @@ private data class ItemLista(
 )
 
 private val itensLista = listOf(
+    ItemLista(RotasLista.POSSO_DOAR, Icons.Filled.HealthAndSafety, "Posso doar?", "Faça a triagem rápida"),
     ItemLista(RotasLista.ONDE_DOAR, Icons.Filled.LocationOn, "Onde doar", "Hemocentros perto de você"),
     ItemLista(RotasLista.GUIA, Icons.Filled.Checklist, "Guia de doação", "Antes, durante e depois"),
     ItemLista(RotasLista.MITOS, Icons.Filled.Lightbulb, "Mitos e verdades", "Tire suas dúvidas")

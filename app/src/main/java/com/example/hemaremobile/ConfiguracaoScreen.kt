@@ -9,11 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +32,12 @@ import androidx.compose.ui.unit.sp
 import com.example.hemaremobile.ui.theme.HemareVermelhoAcao
 
 @Composable
-fun ConfiguracaoScreen(viewModel: ConfiguracaoViewModel) {
+fun ConfiguracaoScreen(
+    viewModel: ConfiguracaoViewModel,
+    nomeConta: String,
+    emailConta: String,
+    onSair: () -> Unit
+) {
     val state by viewModel.uiState.collectAsState()
 
     LazyColumn(
@@ -40,6 +49,50 @@ fun ConfiguracaoScreen(viewModel: ConfiguracaoViewModel) {
     ) {
         item {
             CabecalhoVermelho(titulo = "Configuração")
+        }
+
+        item {
+            Column(
+                modifier = Modifier.padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                RotuloSecao("Conta")
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = nomeConta,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = emailConta,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        OutlinedButton(onClick = onSair) {
+                            Icon(
+                                imageVector = Icons.Filled.Logout,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 6.dp)
+                            )
+                            Text("Sair")
+                        }
+                    }
+                }
+            }
         }
 
         item {
