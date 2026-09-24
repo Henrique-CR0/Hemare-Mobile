@@ -35,6 +35,23 @@ private val HemareDarkColorScheme = darkColorScheme(
     error = HemareVermelhoEscuro
 )
 
+/** Alto contraste: preto/branco/amarelo puros, igual ao modo de acessibilidade do site. */
+private val HemareAltoContrasteColorScheme = darkColorScheme(
+    primary = HemareContrasteDestaque,
+    onPrimary = HemareContrasteFundo,
+    secondary = HemareContrasteDestaque,
+    onSecondary = HemareContrasteFundo,
+    tertiary = HemareContrasteDestaque,
+    background = HemareContrasteFundo,
+    onBackground = HemareContrasteTexto,
+    surface = HemareContrasteSuperficie,
+    onSurface = HemareContrasteTexto,
+    surfaceVariant = HemareContrasteFundo,
+    onSurfaceVariant = HemareContrasteDestaque,
+    error = HemareContrasteErro,
+    outline = HemareContrasteTexto
+)
+
 /**
  * Tema do Hemare Mobile. Sem dynamic color: a marca tem uma identidade
  * vermelho/dourado própria (igual ao site), então não deixamos o Android
@@ -43,9 +60,14 @@ private val HemareDarkColorScheme = darkColorScheme(
 @Composable
 fun HemareMobileTheme(
     darkTheme: Boolean = false,
+    altoContraste: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) HemareDarkColorScheme else HemareLightColorScheme
+    val colorScheme = when {
+        altoContraste -> HemareAltoContrasteColorScheme
+        darkTheme -> HemareDarkColorScheme
+        else -> HemareLightColorScheme
+    }
 
     MaterialTheme(
         colorScheme = colorScheme,

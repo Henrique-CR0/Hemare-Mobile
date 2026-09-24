@@ -8,7 +8,9 @@ import kotlinx.coroutines.flow.update
 
 data class ConfiguracaoUiState(
     val temaEscuro: Boolean = true,
-    val notificacoesAtivas: Boolean = true
+    val notificacoesAtivas: Boolean = true,
+    val altoContraste: Boolean = false,
+    val librasAtivo: Boolean = false
 )
 
 /**
@@ -27,5 +29,13 @@ class ConfiguracaoViewModel : ViewModel() {
 
     fun alternarNotificacoes(ativo: Boolean) {
         _uiState.update { it.copy(notificacoesAtivas = ativo) }
+    }
+
+    fun alternarAltoContraste(ativo: Boolean) {
+        _uiState.update { it.copy(altoContraste = ativo) }
+    }
+
+    fun alternarLibras(ativo: Boolean) {
+        _uiState.update { it.copy(librasAtivo = ativo) }
     }
 }

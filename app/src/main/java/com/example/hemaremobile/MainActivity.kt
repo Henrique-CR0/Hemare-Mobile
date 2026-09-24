@@ -19,7 +19,10 @@ class MainActivity : ComponentActivity() {
             val autenticacaoViewModel: AutenticacaoViewModel = viewModel()
             val configuracaoState by configuracaoViewModel.uiState.collectAsState()
 
-            HemareMobileTheme(darkTheme = configuracaoState.temaEscuro) {
+            HemareMobileTheme(
+                darkTheme = configuracaoState.temaEscuro,
+                altoContraste = configuracaoState.altoContraste
+            ) {
                 HemareRaiz(
                     configuracaoViewModel = configuracaoViewModel,
                     autenticacaoViewModel = autenticacaoViewModel

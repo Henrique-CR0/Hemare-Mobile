@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Accessibility
+import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
@@ -112,6 +114,18 @@ fun ConfiguracaoScreen(
                     titulo = "Notificações",
                     checked = state.notificacoesAtivas,
                     onCheckedChange = viewModel::alternarNotificacoes
+                )
+                ItemSwitch(
+                    icone = Icons.Filled.Contrast,
+                    titulo = "Alto contraste",
+                    checked = state.altoContraste,
+                    onCheckedChange = viewModel::alternarAltoContraste
+                )
+                ItemSwitch(
+                    icone = Icons.Filled.Accessibility,
+                    titulo = "Libras",
+                    checked = state.librasAtivo,
+                    onCheckedChange = viewModel::alternarLibras
                 )
             }
         }

@@ -77,7 +77,7 @@ Hub de conteúdo educativo sobre doação de sangue, com 4 seções:
 
 ### ⚙️ Configuração
 - **Conta**: nome/email da conta logada e botão para sair.
-- **Preferências**: alternar entre tema claro e escuro (funcional — muda as cores do app inteiro) e ativar/desativar notificações (guardado apenas em memória por enquanto).
+- **Preferências**: tema claro/escuro, notificações (guardado apenas em memória por enquanto), **alto contraste** (funcional — troca a paleta do app inteiro por preto/branco/amarelo, igual ao modo de acessibilidade do site) e **Libras** (mostra um botão flutuante, igual em posição ao avatar VLibras do site; a tradução em si ainda não está embutida no app — o botão explica isso ao ser tocado).
 - **Sobre o app**: versão do app e créditos dos desenvolvedores.
 
 ### 🏥 Painel do Hospital
@@ -105,16 +105,17 @@ app/src/main/java/com/example/hemaremobile/
 ├── OndeDoarScreen.kt             # sub-tela: hemocentros
 ├── GuiaScreen.kt                  # sub-tela: guia de doação
 ├── MitosScreen.kt                 # sub-tela: mitos e verdades
-├── ConfiguracaoScreen.kt          # tela Configuração (doador)
-├── ConfiguracaoViewModel.kt       # estado de preferências (tema, notificações)
+├── ConfiguracaoScreen.kt          # tela Configuração (doador e hospital)
+├── ConfiguracaoViewModel.kt       # estado de preferências (tema, contraste, libras, notificações)
+├── BotaoLibras.kt                 # botão flutuante de Libras (igual ao avatar VLibras do site)
 ├── PainelHospitalScreen.kt        # painel do hospital (estoque, necessidades, match)
 ├── PainelHospitalViewModel.kt     # estado e regra de compatibilidade (mock)
 ├── CabecalhoVermelho.kt           # cabeçalho vermelho reutilizado nas telas
 ├── navigation/
 │   └── Navegacao.kt               # raiz do app (auth → doador ou hospital), NavHost + rotas
 └── ui/theme/
-    ├── Color.kt                   # paleta de cores da marca Hemare
-    ├── Theme.kt                   # esquemas de cor claro/escuro (Material 3)
+    ├── Color.kt                   # paleta de cores da marca Hemare (inclui alto contraste)
+    ├── Theme.kt                   # esquemas de cor claro/escuro/alto contraste (Material 3)
     └── Type.kt                    # tipografia
 ```
 

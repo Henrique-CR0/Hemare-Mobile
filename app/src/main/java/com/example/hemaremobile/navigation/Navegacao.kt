@@ -1,5 +1,7 @@
 package com.example.hemaremobile.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -16,9 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -28,6 +32,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.example.hemaremobile.AutenticacaoViewModel
+import com.example.hemaremobile.BotaoLibrasFlutuante
 import com.example.hemaremobile.CadastroDoadorScreen
 import com.example.hemaremobile.CadastroHospitalScreen
 import com.example.hemaremobile.ConfiguracaoScreen
@@ -77,22 +82,33 @@ fun HemareRaiz(
     autenticacaoViewModel: AutenticacaoViewModel
 ) {
     val autState by autenticacaoViewModel.uiState.collectAsState()
+    val configuracaoState by configuracaoViewModel.uiState.collectAsState()
     val conta = autState.contaLogada
 
-    when (conta?.tipo) {
-        null -> AutenticacaoApp(viewModel = autenticacaoViewModel)
-        TipoConta.DOADOR -> HemareApp(
-            configuracaoViewModel = configuracaoViewModel,
-            nomeDoador = conta.nome,
-            emailDoador = conta.email,
-            onSair = autenticacaoViewModel::sair
-        )
-        TipoConta.HOSPITAL -> HospitalApp(
-            configuracaoViewModel = configuracaoViewModel,
-            nomeHospital = conta.nome,
-            emailHospital = conta.email,
-            onSair = autenticacaoViewModel::sair
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (conta?.tipo) {
+            null -> AutenticacaoApp(viewModel = autenticacaoViewModel)
+            TipoConta.DOADOR -> HemareApp(
+                configuracaoViewModel = configuracaoViewModel,
+                nomeDoador = conta.nome,
+                emailDoador = conta.email,
+                onSair = autenticacaoViewModel::sair
+            )
+            TipoConta.HOSPITAL -> HospitalApp(
+                configuracaoViewModel = configuracaoViewModel,
+                nomeHospital = conta.nome,
+                emailHospital = conta.email,
+                onSair = autenticacaoViewModel::sair
+            )
+        }
+
+        if (configuracaoState.librasAtivo) {
+            BotaoLibrasFlutuante(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 88.dp)
+            )
+        }
     }
 }
 
