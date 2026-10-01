@@ -119,16 +119,6 @@ app/src/main/java/com/example/hemaremobile/
     └── Type.kt                    # tipografia
 ```
 
-## Roadmap
-
-- [x] Presentation Layer (telas + navegação + dados mock)
-- [x] Login e cadastro (doador e hospital), com direcionamento por tipo de conta
-- [x] Painel do hospital (estoque, necessidades, match de doadores — mock)
-- [ ] Domain Layer (regras de negócio — compatibilidade sanguínea, elegibilidade, distância)
-- [ ] Repository/Data Layer (integração com a API do [backend Hemare](https://github.com/Henrique-CR0/Hemare/tree/main/backend))
-- [ ] Persistência real de contas e preferências (login expira ao fechar o app)
-- [ ] Localização real e mapa em "Onde doar"
-
 ## Autores
 
 - Henrique Carneiro Ribeiro
