@@ -2,15 +2,15 @@
 
 Versão Android nativa do [Hemare](https://github.com/Henrique-CR0/Hemare), plataforma que conecta doadores de sangue a hemocentros e hospitais, incentivando a doação voluntária e regular.
 
-Este repositório contém a **Presentation Layer** do app: telas navegáveis em Jetpack Compose, com dados fixos (mock) por enquanto — sem chamadas reais ao backend do Hemare ainda. As camadas Domain / Repository / Data ficam para uma etapa futura.
+Este repositório contém o app completo em Jetpack Compose, com as regras do site portadas para Kotlin e dados locais de demonstração (ainda sem chamadas ao backend do Hemare).
 
 ## Tecnologias
 
 - **Kotlin** 2.2.10
 - **Jetpack Compose** (Material 3) + Compose BOM 2026.02.01
-- **Navigation Compose** — bottom navigation com 3 abas + navegação aninhada dentro da aba Lista
-- **MVVM** — cada tela com seu `ViewModel` expondo `UiState` (via `StateFlow`)
-- `compileSdk` / `targetSdk` 37, `minSdk` 24 (Android 7.0+)
+- **Navigation Compose** — barra de abas por tipo de conta + rotas com argumentos
+- **MVVM** — `HemareStore` (ViewModel) expõe um `Estado` imutável via `StateFlow`
+- `compileSdk` / `targetSdk` 37, `minSdk` 26 (Android 8.0+)
 
 ## Como rodar (em qualquer máquina)
 
@@ -32,7 +32,7 @@ Você precisa de um emulador Android **ou** um celular físico:
 
 **Opção A — Emulador (não precisa de celular):**
 1. No Android Studio, abra o **Device Manager** (ícone de celular na barra lateral direita, ou **Tools → Device Manager**).
-2. Clique em **Create Device**, escolha um modelo (ex.: Pixel 8) e uma versão do Android (qualquer uma a partir da 7.0 / API 24), e finalize.
+2. Clique em **Create Device**, escolha um modelo (ex.: Pixel 8) e uma versão do Android (qualquer uma a partir da 8.0 / API 26), e finalize.
 
 **Opção B — Celular físico:**
 1. No celular, ative as **Opções do desenvolvedor** (Configurações → Sobre o telefone → toque 7x em "Número da versão").
@@ -46,88 +46,70 @@ Não é necessário configurar chaves de API, variáveis de ambiente ou backend 
 
 ## Funcionalidades
 
-### 🔐 Login e cadastro
-Antes de entrar no app, o usuário faz login ou se cadastra — como **doador** ou como **hospital/hemocentro** (igual ao site). As contas ficam guardadas só em memória (mock, sem backend real); já vêm 2 contas de teste prontas para login:
+O app reproduz as telas e as regras do site (versão de 30/10/2026) em formato mobile. A barra de baixo muda conforme o tipo de conta:
 
-- Doador: `doador@hemare.com` / `doador123`
-- Hospital: `hospital@hemare.com` / `hospital123`
-
-O cadastro de doador tem as mesmas validações do site (nome sem números, email válido, indicador de força da senha). O cadastro de hospital pede CNPJ (com máscara e validação do dígito verificador), CNES, e endereço completo com seletor de UF.
-
-De acordo com o tipo de conta, o app direciona para uma experiência diferente:
-- **Doador** → as 3 abas normais do app (Início, Lista, Configuração).
-- **Hospital** → 2 abas: **Hospital** (painel de gestão — estoque, necessidades e doadores compatíveis) e **Configuração** (tema, notificações, conta e sair).
-
-O botão "Sair" está na aba Configuração (doador) ou no topo do painel (hospital).
-
-O app tem 3 abas principais para o doador, acessíveis pela barra inferior:
-
-### 🏠 Início
-Tela de boas-vindas com a mensagem principal do Hemare ("Sua doação pode salvar até 4 vidas"), cards com estatísticas rápidas (vidas salvas por doação, tempo médio de doação, percentual da população que doa) e uma ilustração decorativa.
-
-### 📋 Lista
-Hub de conteúdo educativo sobre doação de sangue, com 4 seções:
-
-| Item | Conteúdo |
+| Conta | Abas |
 |---|---|
-| **Posso doar?** | Formulário de triagem igual ao do site: campos de idade e peso (com aviso em tempo real se fora da faixa ideal) e perguntas de sim/não organizadas em 3 grupos (Situações recentes, Saúde, Condições a confirmar). O resultado tem 3 níveis — verde (tudo indica que pode doar), amarelo (confirmar no hemocentro) e vermelho (ponto importante a verificar) — com os motivos de cada um. |
-| **Onde doar** | Lista de hemocentros (dados de exemplo) com nome, cidade/estado, endereço e telefone, com campo de busca por cidade/estado. |
-| **Guia de doação** | Orientações organizadas em 3 fases — antes, durante e depois de doar — adaptadas do guia do site Hemare. |
-| **Mitos e verdades** | 16 afirmações comuns sobre doação de sangue, cada uma marcada como Mito / Verdade / Depende, com explicação baseada em fontes oficiais (Ministério da Saúde, Hemominas, Hemoce, Pró-Sangue). |
+| Visitante | Início · Lista · Entrar · Configuração |
+| Doador | Início · Lista · Minha área · Configuração |
+| Hospital | Minha área · Perfil · Lista · Configuração |
+| Administrador | Admin · Status · Lista · Configuração |
 
-### ⚙️ Configuração
-- **Conta**: nome/email da conta logada e botão para sair.
-- **Preferências**: tema claro/escuro, notificações (guardado apenas em memória por enquanto), **alto contraste** (funcional — troca a paleta do app inteiro por preto/branco/amarelo, igual ao modo de acessibilidade do site) e **Libras** (mostra um botão flutuante, igual em posição ao avatar VLibras do site; a tradução em si ainda não está embutida no app — o botão explica isso ao ser tocado).
-- **Sobre o app**: versão do app e créditos dos desenvolvedores.
+Telas que exigem conta (triagem, apadrinhar, agenda...) mostram o **portão de acesso** ao visitante e voltam para a tela pedida depois do login. Hospital só opera depois de **aprovado** por um administrador.
 
-### 🏥 Painel do Hospital
-Aba exclusiva para contas do tipo hospital (substitui as abas Início e Lista do doador — a aba Configuração continua igual):
+### Para todos
+Início, Lista (menu muda por tipo de conta), Onde doar (busca, GPS, distância, abrir no mapa e ligar), Termômetro de estoque, Previsão do sangue (clima por cidade), Notícias (coletadas de feeds RSS reais, com filtros por categoria e estado), Guia da doação, Mitos e verdades, Seus direitos, Placar das cidades e Campanhas "Quem doa por mim" (por código).
 
-- **Termômetro de estoque**: define o nível (Estável / Alerta / Crítico / Emergência) de cada um dos 8 tipos sanguíneos.
-- **Publicar necessidade**: escolhe o tipo sanguíneo e a urgência e publica um pedido.
-- **Minhas necessidades**: lista o que foi publicado, com botão para ver doadores compatíveis.
-- **Doadores compatíveis**: aplica a regra real de compatibilidade ABO/Rh sobre uma lista fixa de doadores (mock) e permite "confirmar doação" para os doadores identificados.
+### Doador
+- **Cadastro e login** com as validações do site, recuperação de senha (sem e-mail: o código aparece na tela, só demonstração) e código de convite ("Traga um amigo").
+- **Posso doar?** com as regras novas de triagem (idade, peso, situações recentes, saúde).
+- **Minha área**: nível, emblemas, próxima doação, lembrete de retorno, afilhados, promessas, convite de amigos.
+- **Agendar doação** (hospital, dia, horário, regras de intervalo e limite anual) e **Minhas doações** (linha do tempo, cancelar, remarcar).
+- **Apadrinhar** pacientes e **prometer** doação em campanhas.
+- **Meu perfil**: dados, foto, privacidade (anônimo/identificado, com a prévia do que o hospital vê), contato de emergência, **rede de sangue raro**, **Ficha PcD**, **carteirinha digital** (salva na galeria), troca de senha, baixar meus dados e excluir a conta (LGPD).
+
+### Hospital
+Termômetro do estoque, publicar necessidades (com alerta a doadores compatíveis e aptos), doadores compatíveis, abrir horários em lote e acompanhar a agenda do dia (compareceu/faltou), pacientes para apadrinhamento, campanhas de reposição, pedidos de sangue raro, **Radar de aptidão** e perfil da instituição (CNPJ, CNES, busca de endereço por CEP, status da verificação).
+
+### Administrador
+Verificação de hospitais (aprovar, recusar com motivo, revogar), coleta de notícias ("Coletar agora" e situação por fonte) e Status do desenvolvimento.
+
+### Configuração
+Tema claro/escuro, alto contraste, tamanho do texto (A− / A+), Libras (botão flutuante; a tradução não está embutida), notificações, conta e sair.
+
+## Dados e limites desta versão
+
+- **Não há servidor**: contas e dados vivem na memória do app (dados de demonstração) e somem ao fechar. As regras de negócio foram portadas do backend do site para Kotlin puro (`domain/`).
+- Conexões reais: notícias (RSS), CEP (ViaCEP), GPS, compartilhar/WhatsApp/ligar e abrir mapa (aplicativo externo).
+- Contas de teste: `doador@hemare.com` / `doador123` · `hospital@hemare.com` / `hospital123` · `pendente@hemare.com` / `hospital123` (hospital em análise) · `admin@hemare.com` / `admin1234`.
 
 ## Estrutura do projeto
 
 ```
 app/src/main/java/com/example/hemaremobile/
-├── MainActivity.kt              # ponto de entrada, aplica o tema e monta o app
-├── AutenticacaoViewModel.kt      # sessão e contas (mock) — login/cadastro/sair
-├── ComponentesAuth.kt            # campo de formulário reutilizado nas telas de auth
-├── LoginScreen.kt                 # tela de login
-├── CadastroDoadorScreen.kt        # cadastro de doador
-├── CadastroHospitalScreen.kt      # cadastro de hospital (CNPJ, CNES, endereço)
-├── InicioScreen.kt               # tela Início (doador)
-├── ListaScreen.kt                 # hub da aba Lista (doador)
-├── PossoDoarScreen.kt             # sub-tela: questionário de triagem
-├── PossoDoarViewModel.kt          # perguntas e lógica da triagem (mock)
-├── OndeDoarScreen.kt             # sub-tela: hemocentros
-├── GuiaScreen.kt                  # sub-tela: guia de doação
-├── MitosScreen.kt                 # sub-tela: mitos e verdades
-├── ConfiguracaoScreen.kt          # tela Configuração (doador e hospital)
-├── ConfiguracaoViewModel.kt       # estado de preferências (tema, contraste, libras, notificações)
-├── BotaoLibras.kt                 # botão flutuante de Libras (igual ao avatar VLibras do site)
-├── PainelHospitalScreen.kt        # painel do hospital (estoque, necessidades, match)
-├── PainelHospitalViewModel.kt     # estado e regra de compatibilidade (mock)
-├── CabecalhoVermelho.kt           # cabeçalho vermelho reutilizado nas telas
-├── navigation/
-│   └── Navegacao.kt               # raiz do app (auth → doador ou hospital), NavHost + rotas
-└── ui/theme/
-    ├── Color.kt                   # paleta de cores da marca Hemare (inclui alto contraste)
-    ├── Theme.kt                   # esquemas de cor claro/escuro/alto contraste (Material 3)
-    └── Type.kt                    # tipografia
+├── MainActivity.kt, ConfiguracaoScreen/ViewModel.kt, BotaoLibras.kt, CabecalhoVermelho.kt
+├── navigation/Navegacao.kt   # abas por tipo de conta, guarda de rotas (portões), destino de retorno
+├── domain/                   # regras puras portadas do site (triagem, elegibilidade, agenda, gamificação...)
+├── data/                     # Estado imutável, HemareStore (ViewModel), dados de exemplo, operações por papel, RSS e CEP
+└── ui/                       # Rotas/portões/menu (Acesso.kt), componentes, telas (públicas, entrada, doador, hospital, admin), tema
+```
+
+## Compilar pela linha de comando (Windows)
+
+Se o caminho do usuário tem espaços, o Gradle falha ao abrir o socket. Use uma pasta temporária sem espaços:
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=C:\tmpjdk -Djava.io.tmpdir=C:\tmpjdk"
+.\gradlew.bat --offline --no-daemon :app:assembleDebug
 ```
 
 ## Roadmap
 
-- [x] Presentation Layer (telas + navegação + dados mock)
-- [x] Login e cadastro (doador e hospital), com direcionamento por tipo de conta
-- [x] Painel do hospital (estoque, necessidades, match de doadores — mock)
-- [ ] Domain Layer (regras de negócio — compatibilidade sanguínea, elegibilidade, distância)
-- [ ] Repository/Data Layer (integração com a API do [backend Hemare](https://github.com/Henrique-CR0/Hemare/tree/main/backend))
-- [ ] Persistência real de contas e preferências (login expira ao fechar o app)
-- [ ] Localização real e mapa em "Onde doar"
+- [x] Telas e regras equivalentes às do site (visitante, doador, hospital, admin)
+- [ ] Integração com a API do [backend Hemare](https://github.com/Henrique-CR0/Hemare/tree/main/backend) (hoje os dados são locais)
+- [ ] Persistência real de sessão, contas e preferências
+- [ ] Mapa dentro do app e tradução real em Libras (VLibras)
 
 ## Autores
 

@@ -49,7 +49,8 @@ private val HemareAltoContrasteColorScheme = darkColorScheme(
     surfaceVariant = HemareContrasteFundo,
     onSurfaceVariant = HemareContrasteDestaque,
     error = HemareContrasteErro,
-    outline = HemareContrasteTexto
+    outline = HemareContrasteTexto,
+    outlineVariant = HemareContrasteTexto
 )
 
 /**

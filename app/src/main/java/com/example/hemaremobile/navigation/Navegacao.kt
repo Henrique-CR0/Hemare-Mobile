@@ -4,9 +4,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocalHospital
+import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -16,262 +21,226 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.example.hemaremobile.AutenticacaoViewModel
+import androidx.navigation.navArgument
 import com.example.hemaremobile.BotaoLibrasFlutuante
-import com.example.hemaremobile.CadastroDoadorScreen
-import com.example.hemaremobile.CadastroHospitalScreen
 import com.example.hemaremobile.ConfiguracaoScreen
 import com.example.hemaremobile.ConfiguracaoViewModel
-import com.example.hemaremobile.GuiaScreen
-import com.example.hemaremobile.InicioScreen
-import com.example.hemaremobile.ListaScreen
-import com.example.hemaremobile.LoginScreen
-import com.example.hemaremobile.MitosScreen
-import com.example.hemaremobile.OndeDoarScreen
-import com.example.hemaremobile.PainelHospitalScreen
-import com.example.hemaremobile.PossoDoarScreen
-import com.example.hemaremobile.TipoConta
+import com.example.hemaremobile.data.Estado
+import com.example.hemaremobile.data.HemareStore
+import com.example.hemaremobile.data.TipoConta
+import com.example.hemaremobile.ui.DadosPortao
+import com.example.hemaremobile.ui.Portoes
+import com.example.hemaremobile.ui.Rotas
+import com.example.hemaremobile.ui.telas.*
 
-/** As 3 abas principais do app do doador (bottom navigation). */
-sealed class Aba(val rota: String, val rotulo: String, val icone: ImageVector) {
-    data object Inicio : Aba("inicio", "Início", Icons.Filled.Home)
-    data object Lista : Aba("lista", "Lista", Icons.Filled.List)
-    data object Configuracao : Aba("configuracao", "Configuração", Icons.Filled.Settings)
+/** Uma aba da barra de baixo. `grupo` são as rotas que contam como "dentro" dessa aba. */
+private data class Aba(val rota: String, val rotulo: String, val icone: ImageVector, val grupo: Set<String> = setOf(rota))
+
+private val ROTAS_CONTA_VISITANTE = setOf(Rotas.CONTA, Rotas.LOGIN, Rotas.CADASTRO, Rotas.CADASTRO_HOSPITAL, Rotas.RECUPERAR_SENHA)
+
+private val ABA_INICIO = Aba(Rotas.INICIO, "Início", Icons.Filled.Home)
+private val ABA_LISTA = Aba(Rotas.LISTA, "Lista", Icons.Filled.List)
+private val ABA_CONFIG = Aba(Rotas.CONFIGURACAO, "Configuração", Icons.Filled.Settings)
+
+private fun abasDe(papel: TipoConta?): List<Aba> = when (papel) {
+    null -> listOf(ABA_INICIO, ABA_LISTA, Aba(Rotas.CONTA, "Entrar", Icons.Filled.Login, ROTAS_CONTA_VISITANTE), ABA_CONFIG)
+    TipoConta.DOADOR -> listOf(
+        ABA_INICIO, ABA_LISTA,
+        Aba(Rotas.AREA_DOADOR, "Minha área", Icons.Filled.Person, setOf(Rotas.AREA_DOADOR, Rotas.MEU_PERFIL, Rotas.MINHAS_DOACOES, Rotas.COMPLETAR_PERFIL)),
+        ABA_CONFIG
+    )
+    TipoConta.HOSPITAL -> listOf(
+        Aba(Rotas.PAINEL_HOSPITAL, "Minha área", Icons.Filled.LocalHospital), Aba(Rotas.PERFIL_HOSPITAL, "Perfil", Icons.Filled.Business), ABA_LISTA, ABA_CONFIG
+    )
+    TipoConta.ADMIN -> listOf(
+        Aba(Rotas.ADMIN, "Admin", Icons.Filled.AdminPanelSettings), Aba(Rotas.ADMIN_STATUS, "Status", Icons.Filled.BarChart), ABA_LISTA, ABA_CONFIG
+    )
 }
 
-val abasPrincipais = listOf(Aba.Inicio, Aba.Lista, Aba.Configuracao)
+private fun base(rota: String?): String = rota?.substringBefore("?")?.substringBefore("/{")?.substringBefore("/") ?: ""
 
-/** Sub-rotas de conteúdo dentro da aba Lista. */
-object RotasLista {
-    const val HUB = "lista/hub"
-    const val POSSO_DOAR = "lista/posso-doar"
-    const val ONDE_DOAR = "lista/onde-doar"
-    const val GUIA = "lista/guia"
-    const val MITOS = "lista/mitos"
+/**
+ * Raiz do app: cada tipo de conta (visitante, doador, hospital, admin) tem suas abas.
+ * Trocar de conta recria a navegação inteira (`key(papel)`), como o site faz ao entrar e sair.
+ */
+@Composable
+fun HemareRaiz(configuracaoViewModel: ConfiguracaoViewModel, store: HemareStore) {
+    val estado by store.estado.collectAsState()
+    val configuracao by configuracaoViewModel.uiState.collectAsState()
+    var destinoPendente by remember { mutableStateOf<String?>(null) }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        key(estado.papel) {
+            AppDoPapel(
+                papel = estado.papel, store = store, configuracaoViewModel = configuracaoViewModel,
+                destinoPendente = destinoPendente, consumirDestino = { destinoPendente = null }, definirDestino = { destinoPendente = it }
+            )
+        }
+        if (configuracao.librasAtivo) {
+            BotaoLibrasFlutuante(modifier = Modifier.align(Alignment.BottomEnd).padding(end = 16.dp, bottom = 88.dp))
+        }
+    }
 }
 
-/** Rotas da tela de login/cadastro, mostradas antes de entrar na área do doador ou do hospital. */
-private object RotasAutenticacao {
-    const val LOGIN = "auth/login"
-    const val CADASTRO_DOADOR = "auth/cadastro-doador"
-    const val CADASTRO_HOSPITAL = "auth/cadastro-hospital"
+@Composable
+private fun AppDoPapel(
+    papel: TipoConta?, store: HemareStore, configuracaoViewModel: ConfiguracaoViewModel,
+    destinoPendente: String?, consumirDestino: () -> Unit, definirDestino: (String?) -> Unit
+) {
+    val estado by store.estado.collectAsState()
+    val nav = rememberNavController()
+    val abas = remember(papel) { abasDe(papel) }
+    val rotasDeAba = remember(papel) { abas.flatMap { it.grupo }.toSet() }
+
+    /** Abas trocam a pilha inteira; as outras telas empilham por cima. */
+    fun ir(rota: String) {
+        if (base(rota) in rotasDeAba) {
+            nav.navigate(rota) { popUpTo(Rotas.inicialDe(papel)) { inclusive = false }; launchSingleTop = true }
+        } else {
+            nav.navigate(rota) { launchSingleTop = true }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        val alvo = destinoPendente
+        if (alvo != null) { consumirDestino(); ir(alvo) }
+    }
+
+    /** Depois de entrar ou cadastrar: o destino de retorno (se for do app) vale na conta nova. */
+    fun entrou(destino: String?, padrao: String? = null) = definirDestino(Rotas.destinoSeguro(destino, padrao))
+
+    Scaffold(bottomBar = { BarraDeAbas(nav, abas) }) { espaco ->
+        NavHost(nav, startDestination = Rotas.inicialDe(papel), modifier = Modifier.padding(espaco)) {
+            // ---- públicas ----
+            composable(Rotas.INICIO) { InicioScreen(estado, ::ir) }
+            composable(Rotas.LISTA) { ListaScreen(estado, ::ir) }
+            composable(Rotas.CONFIGURACAO) {
+                ConfiguracaoScreen(configuracaoViewModel, estado, onSair = { store.sair() }, onEntrar = { ir(Rotas.CONTA) })
+            }
+            composable(Rotas.LOCAIS) { LocaisScreen(estado) }
+            composable(Rotas.ESTOQUE) { EstoqueScreen(estado, ::ir) }
+            composable(Rotas.NOTICIAS) { NoticiasScreen(store) }
+            composable(Rotas.CLIMA) { ClimaScreen(estado, ::ir) }
+            composable(Rotas.ORIENTACOES) { OrientacoesScreen() }
+            composable(Rotas.MITOS) { MitosScreen() }
+            composable(Rotas.DIREITOS) { DireitosScreen() }
+            composable(Rotas.PLACAR) { PlacarScreen(estado, ::ir) }
+            composable(Rotas.CAMPANHA_COM_CODIGO, listOf(navArgument("codigo") { type = NavType.StringType })) {
+                CampanhaScreen(store, it.arguments?.getString("codigo") ?: "", ::ir)
+            }
+
+            // ---- só doador (visitante vê o portão) ----
+            composable(Rotas.TRIAGEM) { Protegido(estado, nav, Rotas.TRIAGEM, setOf(TipoConta.DOADOR), Portoes.TRIAGEM) { TriagemScreen() } }
+            composable(Rotas.APADRINHAR) { Protegido(estado, nav, Rotas.APADRINHAR, setOf(TipoConta.DOADOR), Portoes.APADRINHAR) { ApadrinharScreen(store, ::ir) } }
+            composable(Rotas.AGENDAR) { Protegido(estado, nav, Rotas.AGENDAR, setOf(TipoConta.DOADOR), Portoes.GENERICO) { AgendarScreen(store, ::ir) } }
+            composable(Rotas.AREA_DOADOR) { Protegido(estado, nav, Rotas.AREA_DOADOR, setOf(TipoConta.DOADOR), Portoes.GENERICO) { AreaDoadorScreen(store, ::ir) } }
+            composable(Rotas.MEU_PERFIL) { Protegido(estado, nav, Rotas.MEU_PERFIL, setOf(TipoConta.DOADOR), Portoes.GENERICO) { MeuPerfilScreen(store, ::ir) } }
+            composable(Rotas.MINHAS_DOACOES) { Protegido(estado, nav, Rotas.MINHAS_DOACOES, setOf(TipoConta.DOADOR), Portoes.GENERICO) { MinhasDoacoesScreen(store, ::ir) } }
+            composable(Rotas.COMPLETAR_PERFIL) {
+                Protegido(estado, nav, Rotas.COMPLETAR_PERFIL, setOf(TipoConta.DOADOR), Portoes.GENERICO) {
+                    CompletarPerfilScreen(store, aoConcluir = { ir(Rotas.AREA_DOADOR) })
+                }
+            }
+
+            // ---- hospital e admin ----
+            composable(Rotas.PAINEL_HOSPITAL) { Protegido(estado, nav, Rotas.PAINEL_HOSPITAL, setOf(TipoConta.HOSPITAL), Portoes.GENERICO) { PainelHospitalScreen(store, ::ir) } }
+            composable(Rotas.PERFIL_HOSPITAL) { Protegido(estado, nav, Rotas.PERFIL_HOSPITAL, setOf(TipoConta.HOSPITAL), Portoes.GENERICO) { PerfilHospitalScreen(store, ::ir) } }
+            composable(Rotas.RADAR) { Protegido(estado, nav, Rotas.RADAR, setOf(TipoConta.HOSPITAL, TipoConta.ADMIN), Portoes.GENERICO) { RadarScreen(store) } }
+            composable(Rotas.ADMIN) { Protegido(estado, nav, Rotas.ADMIN, setOf(TipoConta.ADMIN), Portoes.GENERICO) { AdminScreen(store, ::ir) } }
+            composable(Rotas.ADMIN_STATUS) { Protegido(estado, nav, Rotas.ADMIN_STATUS, setOf(TipoConta.ADMIN), Portoes.GENERICO) { AdminStatusScreen(store, ::ir) } }
+
+            // ---- entrada (visitante) ----
+            composable(Rotas.CONTA) {
+                ContaVisitanteScreen(
+                    aoEntrar = { ir(Rotas.login()) }, aoCadastro = { ir(Rotas.cadastro()) }, aoCadastroHospital = { ir(Rotas.CADASTRO_HOSPITAL) }
+                )
+            }
+            composable(Rotas.LOGIN_COM_DESTINO, listOf(navArgument("destino") { type = NavType.StringType; nullable = true; defaultValue = null })) {
+                val destino = it.arguments?.getString("destino")
+                LoginScreen(
+                    store, destino, aoEntrou = { d -> entrou(d) },
+                    aoCadastro = { ir(Rotas.cadastro(destino)) }, aoCadastroHospital = { ir(Rotas.CADASTRO_HOSPITAL) }, aoRecuperar = { ir(Rotas.RECUPERAR_SENHA) }
+                )
+            }
+            composable(
+                Rotas.CADASTRO_COM_DESTINO,
+                listOf(
+                    navArgument("destino") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("ref") { type = NavType.StringType; nullable = true; defaultValue = null }
+                )
+            ) {
+                val destino = it.arguments?.getString("destino")
+                CadastroScreen(
+                    store, destino, it.arguments?.getString("ref"),
+                    aoCriada = { entrou(destino, Rotas.COMPLETAR_PERFIL) }, aoLogin = { ir(Rotas.login(destino)) }
+                )
+            }
+            composable(Rotas.CADASTRO_HOSPITAL) {
+                CadastroHospitalScreen(store, aoCadastrado = { definirDestino(null) }, aoLogin = { ir(Rotas.login()) })
+            }
+            composable(Rotas.RECUPERAR_SENHA) { RecuperarSenhaScreen(store, aoVoltarLogin = { ir(Rotas.login()) }) }
+        }
+    }
 }
 
 /**
- * Raiz do app: decide entre a tela de login/cadastro, a área do doador (3 abas)
- * ou a área do hospital (2 abas), de acordo com a conta logada na sessão.
+ * Guarda de rota: visitante vê o portão de acesso (e volta para cá depois de entrar);
+ * quem está logado com outro tipo de conta vai para a própria área.
  */
 @Composable
-fun HemareRaiz(
-    configuracaoViewModel: ConfiguracaoViewModel,
-    autenticacaoViewModel: AutenticacaoViewModel
+private fun Protegido(
+    estado: Estado, nav: NavHostController, rota: String, permitidos: Set<TipoConta>, portao: DadosPortao, conteudo: @Composable () -> Unit
 ) {
-    val autState by autenticacaoViewModel.uiState.collectAsState()
-    val configuracaoState by configuracaoViewModel.uiState.collectAsState()
-    val conta = autState.contaLogada
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        when (conta?.tipo) {
-            null -> AutenticacaoApp(viewModel = autenticacaoViewModel)
-            TipoConta.DOADOR -> HemareApp(
-                configuracaoViewModel = configuracaoViewModel,
-                nomeDoador = conta.nome,
-                emailDoador = conta.email,
-                onSair = autenticacaoViewModel::sair
-            )
-            TipoConta.HOSPITAL -> HospitalApp(
-                configuracaoViewModel = configuracaoViewModel,
-                nomeHospital = conta.nome,
-                emailHospital = conta.email,
-                onSair = autenticacaoViewModel::sair
-            )
-        }
-
-        if (configuracaoState.librasAtivo) {
-            BotaoLibrasFlutuante(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 88.dp)
-            )
+    val papel = estado.papel
+    when {
+        papel != null && papel in permitidos -> conteudo()
+        papel == null -> PortaoDeAcesso(
+            p = portao,
+            aoCriarConta = { nav.navigate(Rotas.cadastro(rota)) },
+            aoEntrar = { nav.navigate(Rotas.login(rota)) },
+            aoCadastroHospital = { nav.navigate(Rotas.CADASTRO_HOSPITAL) },
+            aoAbrir = { nav.navigate(it) }
+        )
+        else -> LaunchedEffect(papel) {
+            nav.navigate(Rotas.inicialDe(papel)) { popUpTo(Rotas.inicialDe(papel)) { inclusive = false }; launchSingleTop = true }
         }
     }
 }
 
 @Composable
-private fun AutenticacaoApp(viewModel: AutenticacaoViewModel) {
-    val navController = rememberNavController()
-
-    NavHost(navController = navController, startDestination = RotasAutenticacao.LOGIN) {
-        composable(RotasAutenticacao.LOGIN) {
-            LoginScreen(
-                viewModel = viewModel,
-                onIrParaCadastroDoador = { navController.navigate(RotasAutenticacao.CADASTRO_DOADOR) },
-                onIrParaCadastroHospital = { navController.navigate(RotasAutenticacao.CADASTRO_HOSPITAL) }
-            )
-        }
-        composable(RotasAutenticacao.CADASTRO_DOADOR) {
-            CadastroDoadorScreen(
-                viewModel = viewModel,
-                onVoltarParaLogin = { navController.popBackStack() }
-            )
-        }
-        composable(RotasAutenticacao.CADASTRO_HOSPITAL) {
-            CadastroHospitalScreen(
-                viewModel = viewModel,
-                onVoltarParaLogin = { navController.popBackStack() }
-            )
-        }
-    }
-}
-
-@Composable
-fun HemareApp(
-    configuracaoViewModel: ConfiguracaoViewModel,
-    nomeDoador: String,
-    emailDoador: String,
-    onSair: () -> Unit
-) {
-    val navController = rememberNavController()
-
-    Scaffold(
-        bottomBar = { HemareBottomBar(navController) }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Aba.Inicio.rota,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Aba.Inicio.rota) {
-                InicioScreen()
-            }
-
-            navigation(startDestination = RotasLista.HUB, route = Aba.Lista.rota) {
-                composable(RotasLista.HUB) {
-                    ListaScreen(onItemClick = { rota -> navController.navigate(rota) })
-                }
-                composable(RotasLista.POSSO_DOAR) { PossoDoarScreen() }
-                composable(RotasLista.ONDE_DOAR) { OndeDoarScreen() }
-                composable(RotasLista.GUIA) { GuiaScreen() }
-                composable(RotasLista.MITOS) { MitosScreen() }
-            }
-
-            composable(Aba.Configuracao.rota) {
-                ConfiguracaoScreen(
-                    viewModel = configuracaoViewModel,
-                    nomeConta = nomeDoador,
-                    emailConta = emailDoador,
-                    onSair = onSair
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun HemareBottomBar(navController: NavHostController) {
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val destinoAtual = backStackEntry?.destination
+private fun BarraDeAbas(nav: NavHostController, abas: List<Aba>) {
+    val entrada by nav.currentBackStackEntryAsState()
+    val atual = base(entrada?.destination?.route)
+    // "Lista" é a aba das telas que não pertencem a nenhuma outra aba
+    val deOutras = abas.filter { it.rota != Rotas.LISTA }.flatMap { it.grupo }.toSet()
 
     NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-        abasPrincipais.forEach { aba ->
-            val selecionado = destinoAtual?.hierarchy?.any { it.route == aba.rota } == true
+        abas.forEach { aba ->
+            val selecionada = if (aba.rota == Rotas.LISTA) atual == Rotas.LISTA || atual !in deOutras else atual in aba.grupo
             NavigationBarItem(
-                selected = selecionado,
+                selected = selecionada,
                 onClick = {
-                    navController.navigate(aba.rota) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
+                    nav.navigate(aba.rota) {
+                        popUpTo(abas.first().rota) { inclusive = false }
                         launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                icon = { Icon(aba.icone, contentDescription = aba.rotulo) },
-                label = { Text(aba.rotulo) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = Color.Transparent
-                )
-            )
-        }
-    }
-}
-
-/** As 2 abas do app do hospital (sem Início/Lista do doador). */
-private sealed class AbaHospital(val rota: String, val rotulo: String, val icone: ImageVector) {
-    data object Painel : AbaHospital("hospital/painel", "Hospital", Icons.Filled.LocalHospital)
-    data object Configuracao : AbaHospital("hospital/configuracao", "Configuração", Icons.Filled.Settings)
-}
-
-private val abasHospital = listOf(AbaHospital.Painel, AbaHospital.Configuracao)
-
-@Composable
-private fun HospitalApp(
-    configuracaoViewModel: ConfiguracaoViewModel,
-    nomeHospital: String,
-    emailHospital: String,
-    onSair: () -> Unit
-) {
-    val navController = rememberNavController()
-
-    Scaffold(
-        bottomBar = { HospitalBottomBar(navController) }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = AbaHospital.Painel.rota,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(AbaHospital.Painel.rota) {
-                PainelHospitalScreen(nomeHospital = nomeHospital, onSair = onSair)
-            }
-            composable(AbaHospital.Configuracao.rota) {
-                ConfiguracaoScreen(
-                    viewModel = configuracaoViewModel,
-                    nomeConta = nomeHospital,
-                    emailConta = emailHospital,
-                    onSair = onSair
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun HospitalBottomBar(navController: NavHostController) {
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val destinoAtual = backStackEntry?.destination
-
-    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-        abasHospital.forEach { aba ->
-            val selecionado = destinoAtual?.hierarchy?.any { it.route == aba.rota } == true
-            NavigationBarItem(
-                selected = selecionado,
-                onClick = {
-                    navController.navigate(aba.rota) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
                     }
                 },
                 icon = { Icon(aba.icone, contentDescription = aba.rotulo) },
