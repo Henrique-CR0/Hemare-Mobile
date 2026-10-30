@@ -15,7 +15,7 @@ Todas as telas do site existem em formato mobile, com as mesmas regras de negóc
 | Banco de dados | 🟢 | SQLite com 15 tabelas, criado e preenchido no emulador. Falta provar a sessão ao reabrir o app e um teste automatizado. |
 | Integração com a API | 🟡 | Cliente funcionando contra um servidor de demonstração (4 rotas públicas); sem teste contra o backend real. |
 | Segurança e privacidade | 🟡 | Senha só como resumo SHA-256, privacidade do doador testada; o site usa bcrypt e token no servidor. |
-| Documentação | 🟢 | README, este relatório, roteiro de demonstração e comentários nas regras. |
+| Documentação | 🟢 | README (com os passos para demonstrar a API), este relatório e comentários nas regras. |
 
 ## 2. Números
 
