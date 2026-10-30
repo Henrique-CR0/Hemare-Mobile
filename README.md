@@ -100,9 +100,25 @@ node tools/servidor-demo/servidor.js 3000
 
 Num celular real, use o IP do computador na mesma rede Wi-Fi (por exemplo `http://192.168.0.10:3000`).
 
+### Serviços do Android e externos
+
+| Serviço | Para que serve | Onde |
+|---|---|---|
+| Notificações + `AlarmManager` | Aviso de quando a pessoa pode doar de novo (9h) e da doação agendada (véspera às 18h e 2 horas antes), mesmo com o app fechado | `services/`, `data/Lembretes.kt` |
+| Reinício do aparelho (`BOOT_COMPLETED`) | Agenda os avisos de novo, porque o Android apaga os alarmes ao reiniciar | `services/AgendadorLembretes.kt` |
+| SQLite | Guarda contas, doações e a sessão | `data/local/` |
+| API do Hemare (HTTP/JSON) | Locais, estoque e notícias do servidor | `data/api/` |
+| Feeds RSS | Notícias reais | `data/StoreAdmin.kt` |
+| ViaCEP | Preenche o endereço do hospital pelo CEP | `data/Cep.kt` |
+| Localização (GPS) | Distância até os hemocentros | `ui/Util.kt` |
+| Compartilhar, WhatsApp, ligar, mapa | Intents para outros aplicativos | `ui/Util.kt` |
+| Galeria (`MediaStore`) | Salvar a carteirinha em Imagens/Hemare | `ui/Util.kt` |
+
+Para ver a notificação funcionando: **Configuração → Notificações → 🔔 Enviar notificação de teste** (o Android 13+ pede a permissão na primeira vez). Para ver os alarmes agendados: agende uma doação e rode `adb shell dumpsys alarm | findstr hemare.lembrete`.
+
 ## Testes
 
-98 testes unitários (regras do domínio e a loja), todos passando:
+107 testes unitários (regras do domínio e a loja), todos passando:
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"

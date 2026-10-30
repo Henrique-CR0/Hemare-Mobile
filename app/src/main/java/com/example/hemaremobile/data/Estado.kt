@@ -102,6 +102,8 @@ data class Estado(
     /** Termômetro baixado do servidor do Hemare (hospitais que não existem neste aparelho). */
     val estoqueExterno: List<ItemEstoque> = emptyList(),
     val servidor: String? = null,
+    /** Avisos do Android (lembrete de retorno e doação agendada). Desligado = nenhum aviso é agendado. */
+    val notificacoes: Boolean = true,
     val sincronizadoEm: Long? = null
 ) {
     // ---------- sessão ----------

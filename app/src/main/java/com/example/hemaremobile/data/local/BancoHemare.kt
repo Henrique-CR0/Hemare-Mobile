@@ -76,6 +76,7 @@ class BancoHemare(private val contexto: Context, private val nomeDoBanco: String
                 indicacoes = meta["indicacoes"]?.let { CodecEstado.indicacoes(JSONObject(it)) } ?: emptyMap(),
                 estoqueExterno = linhas(db, "estoque_externo", "ORDER BY ordem") { CodecEstado.itemEstoque(it) },
                 servidor = meta["servidor"],
+                notificacoes = meta["notificacoes"] != "false",
                 sincronizadoEm = meta["sincronizadoEm"]?.toLongOrNull()
             )
         } catch (e: Exception) {
@@ -120,6 +121,7 @@ class BancoHemare(private val contexto: Context, private val nomeDoBanco: String
             estado.sessaoUsuarioId?.let { meta["sessaoUsuarioId"] = it.toString() }
             estado.coleta?.let { meta["coleta"] = CodecEstado.coleta(it).toString() }
             estado.servidor?.let { meta["servidor"] = it }
+            meta["notificacoes"] = estado.notificacoes.toString()
             estado.sincronizadoEm?.let { meta["sincronizadoEm"] = it.toString() }
             meta.forEach { (k, v) -> db.insertOrThrow("meta", null, valores("chave" to k, "valor" to v)) }
             db.setTransactionSuccessful()

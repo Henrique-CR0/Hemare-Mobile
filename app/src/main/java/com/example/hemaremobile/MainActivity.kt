@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.hemaremobile.data.local.BancoHemare
+import com.example.hemaremobile.services.AgendadorLembretes
 import com.example.hemaremobile.data.HemareStore
 import com.example.hemaremobile.navigation.HemareRaiz
 import com.example.hemaremobile.ui.theme.HemareMobileTheme
@@ -24,7 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val configuracaoViewModel: ConfiguracaoViewModel = viewModel()
             val contexto = applicationContext
-            val store: HemareStore = viewModel(factory = viewModelFactory { initializer { HemareStore(BancoHemare(contexto)) } })
+            val store: HemareStore = viewModel(factory = viewModelFactory { initializer { HemareStore(BancoHemare(contexto), AgendadorLembretes(contexto)::reagendar) } })
             val configuracaoState by configuracaoViewModel.uiState.collectAsState()
             val densidade = LocalDensity.current
 

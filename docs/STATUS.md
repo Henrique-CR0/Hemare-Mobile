@@ -6,12 +6,13 @@
 
 **Saúde geral: 🟢 verde nas regras, nas telas e nos testes; 🟡 amarelo na integração com o backend real.**
 
-Todas as telas do site existem em formato mobile, com as mesmas regras de negócio, e 98 testes unitários passam. O app abre e navega num emulador Android 17. O banco SQLite é criado e preenchido no aparelho, e o cliente da API **sincronizou com sucesso** com um servidor de demonstração, gravando os dados no banco. **Falta validar com o backend real do site** (que exige PostgreSQL) e passar login, agenda e doações para a API: hoje as contas e as doações existem só no aparelho. Por isso o app serve para **demonstração e piloto fechado**, não para publicação.
+Todas as telas do site existem em formato mobile, com as mesmas regras de negócio, e 107 testes unitários passam. O app abre e navega num emulador Android 17. O banco SQLite é criado e preenchido no aparelho, e o cliente da API **sincronizou com sucesso** com um servidor de demonstração, gravando os dados no banco. **Falta validar com o backend real do site** (que exige PostgreSQL) e passar login, agenda e doações para a API: hoje as contas e as doações existem só no aparelho. Por isso o app serve para **demonstração e piloto fechado**, não para publicação.
 
 | Área | Situação | Em uma frase |
 |---|:-:|---|
 | Funcionalidades | 🟢 | Visitante, doador, hospital e administrador têm as telas e as regras do site. |
-| Qualidade e testes | 🟢 | 98 testes unitários das regras e da loja, todos passando. Sem teste de tela nem de aparelho. |
+| Qualidade e testes | 🟢 | 107 testes unitários das regras, da loja e dos lembretes, todos passando. Sem teste de tela nem de aparelho. |
+| Serviços do Android | 🟢 | Notificações de lembrete (retorno e doação agendada) agendadas no AlarmManager; verificadas no emulador. |
 | Banco de dados | 🟢 | SQLite com 15 tabelas, criado e preenchido no emulador. Falta provar a sessão ao reabrir o app e um teste automatizado. |
 | Integração com a API | 🟡 | Cliente funcionando contra um servidor de demonstração (4 rotas públicas); sem teste contra o backend real. |
 | Segurança e privacidade | 🟡 | Senha só como resumo SHA-256, privacidade do doador testada; o site usa bcrypt e token no servidor. |
@@ -21,14 +22,14 @@ Todas as telas do site existem em formato mobile, com as mesmas regras de negóc
 
 | Indicador | Valor |
 |---|---|
-| Testes automáticos | **98 testes** em 21 classes (5 arquivos), **todos passando** ✅ (0 falhas, 0 erros, 0 ignorados) |
-| Código do app | 38 arquivos Kotlin · 7.985 linhas (domínio 1.568 · dados 1.961 · telas e componentes 3.812) |
-| Código de testes | 808 linhas |
+| Testes automáticos | **107 testes** em 22 classes (6 arquivos), **todos passando** ✅ (0 falhas, 0 erros, 0 ignorados) |
+| Código do app | 41 arquivos Kotlin · 8.187 linhas |
+| Código de testes | 905 linhas |
 | Rotas de tela | 28 registradas na navegação (públicas, entrada, doador, hospital, administrador) |
 | Tabelas do banco | 15 (usuários, doadores, hospitais, locais, doações, estoque, necessidades, vagas, agendamentos, casos, campanhas, pedidos raros, notícias, estoque externo, meta) |
 | Rotas da API usadas pelo app | 4 na sincronização (`/locais`, `/hospital/estoque-publico`, `/noticias/feed`) mais `/saude`; `/auth/login` está implementada no cliente, mas **nenhuma tela a usa ainda**. O backend tem 91 rotas. |
 | Ambiente de teste | Emulador Pixel 10, Android 17 (API 37); AGP 9.3.2, Gradle 9.5.0, Kotlin 2.2.10 |
-| Histórico | 22 commits; tudo publicado no GitHub (`master` e `developer` iguais) |
+| Histórico | 24 commits; tudo publicado no GitHub (`master` e `developer` iguais) |
 
 ## 3. O que foi entregue
 
@@ -38,6 +39,7 @@ Todas as telas do site existem em formato mobile, com as mesmas regras de negóc
 | **Domínio** | Regras do backend do site em Kotlin puro: triagem, elegibilidade, compatibilidade ABO/Rh, agenda, gamificação, apadrinhamento, campanhas, sangue raro, ficha PcD, notícias e cadeia de confiança (hash SHA-256). |
 | **Telas equivalentes ao site** | Navegação por tipo de conta com portões de acesso; doador (agenda, histórico, perfil, carteirinha, LGPD), hospital (estoque, necessidades, agenda, campanhas, raro, radar) e administrador (verificação, notícias, status). |
 | **Banco, API e testes** | Banco SQLite com sessão e dados guardados entre aberturas; cliente da API com tela de servidor em Configuração; senhas guardadas só como resumo; 98 testes unitários. |
+| **Serviços do Android** | Notificações de lembrete: aviso de quando a pessoa pode doar de novo (às 9h) e da doação agendada (véspera às 18h e 2 horas antes), agendadas no `AlarmManager`, que sobrevivem a fechar o app e a reiniciar o aparelho; permissão do Android 13+; botão de teste na Configuração. |
 | **Verificação no emulador** | App aberto e navegado no Android 17; servidor de demonstração (`tools/servidor-demo`); sincronização comprovada de ponta a ponta; botões de ação fixos no rodapé de login, cadastro e completar perfil. |
 
 ## 4. Como cada coisa foi verificada
@@ -50,6 +52,10 @@ Todas as telas do site existem em formato mobile, com as mesmas regras de negóc
 | Banco criado e preenchido | Database Inspector do Android Studio e leitura do arquivo `hemare.db`: 15 tabelas, 16 usuários, 15 doações, 210 vagas | ✅ |
 | Senha protegida | Leitura da coluna `senha`: só um resumo de 64 caracteres | ✅ |
 | Integração com a API | `GET /saude`, `/locais`, `/hospital/estoque-publico` e `/noticias/feed` vistos no terminal do servidor; 3 locais, 4 níveis de estoque e 3 notícias gravados no banco | ✅ contra servidor de demonstração |
+| Notificação de teste | Botão em Configuração: sem permissão o app avisa; ao ligar pede a permissão do sistema; com ela a notificação aparece na bandeja (conferida no `dumpsys notification`) | ✅ |
+| Alarmes do lembrete | Agendar uma doação registrou `hemare.lembrete.2` (véspera, 02/11 18:00) e `.3` (2 h antes, 03/11 08:00) no AlarmManager; cancelar o agendamento os removeu (`Reason=alarm_cancelled`) | ✅ |
+| Notificação disparada pelo alarme na hora marcada | Não esperei o horário chegar; a exibição foi testada só pelo botão de teste | ⚠️ pendente |
+| Alarmes depois de reiniciar o aparelho | `ReinicioReceiver` escrito, nunca executado | ⚠️ pendente |
 | Pedido da permissão de rede local | Caixa do sistema aparece, e a sincronização continua sozinha ao tocar em "Allow" | ✅ |
 | **Sessão volta ao reabrir o app** | Tentei por script e não concluí o login; **não foi confirmado** | ⚠️ pendente |
 | Backend real do site | Não há PostgreSQL nem Docker nesta máquina | ❌ não testado |
@@ -78,6 +84,7 @@ Todas as telas do site existem em formato mobile, com as mesmas regras de negóc
 | R6 | Sem teste de tela (Compose) nem de navegação. | 🟡 | Testar os portões de acesso e as abas por tipo de conta. |
 | R7 | O Android Studio sugere atualizar para AGP 9.5.0 e Gradle 9.6.0; não foi adotado nem testado. | 🟢 | Manter 9.3.2 / 9.5.0 até haver tempo para testar a atualização. |
 | R8 | O botão de Libras não traduz; o mapa abre um aplicativo externo. | 🟢 | Embutir o VLibras e um mapa na tela, se for prioridade. |
+| R10 | O aviso de lembrete usa alarme não exato: pode atrasar alguns minutos, e fabricantes com economia de bateria agressiva podem adiá-lo. O disparo na hora marcada e o reagendamento após reiniciar ainda não foram vistos. | 🟡 | Testar com o horário próximo e reiniciando o emulador; avaliar `WorkManager` se for preciso. |
 | R9 | Os formulários longos (perfil do doador) ainda têm o botão "Salvar" no fim da rolagem. | 🟢 | Fixar o botão no rodapé dessas telas também. |
 
 ## 7. Como demonstrar e como rodar

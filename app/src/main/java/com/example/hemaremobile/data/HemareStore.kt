@@ -21,7 +21,11 @@ import java.time.LocalDate
  * Ainda não há backend publicado, então tudo vive em memória a partir dos dados de exemplo (Seed). Trocar isto por chamadas
  * HTTP à API do site é o próximo passo (Repository/Data layer) e não muda as telas.
  */
-class HemareStore(private val repositorio: RepositorioEstado? = null) : ViewModel() {
+class HemareStore(
+    private val repositorio: RepositorioEstado? = null,
+    /** Chamado (fora da tela principal) depois de cada mudança: é por aqui que o Android agenda as notificações. */
+    private val aoMudar: ((Estado) -> Unit)? = null
+) : ViewModel() {
     // Com banco: continua de onde parou (inclusive a sessão). Sem banco (testes): dados de exemplo em memória.
     private val _estado = MutableStateFlow(repositorio?.carregar() ?: Seed.criar())
     val estado: StateFlow<Estado> = _estado.asStateFlow()
@@ -30,18 +34,31 @@ class HemareStore(private val repositorio: RepositorioEstado? = null) : ViewMode
     private val codigosRecuperacao = mutableMapOf<String, Triple<String, Long, Int>>() // email -> (código, validade, tentativas erradas)
 
     fun atual(): Estado = _estado.value
-    fun definir(e: Estado) {
-        _estado.value = e
-        if (repositorio != null) agendarGravacao(repositorio)
+    init {
+        aoMudar?.let { avisar(it) } // ao abrir o app, garante que os avisos de hoje estão agendados
     }
 
-    /** Grava no banco 300 ms depois da última mudança (várias mudanças seguidas viram uma gravação só). */
-    private fun agendarGravacao(repo: RepositorioEstado) {
+    fun definir(e: Estado) {
+        _estado.value = e
+        if (repositorio != null || aoMudar != null) agendarGravacao()
+    }
+
+    /** Grava no banco e reagenda as notificações 300 ms depois da última mudança (várias mudanças seguidas viram uma só). */
+    private fun agendarGravacao() {
         salvando?.cancel()
         salvando = viewModelScope.launch(Dispatchers.IO) {
             delay(300)
-            gravar(repo)
+            repositorio?.let { gravar(it) }
+            aoMudar?.let { avisar(it) }
         }
+    }
+
+    private fun avisar(f: (Estado) -> Unit) {
+        try { f(_estado.value) } catch (e: Exception) { /* sem notificação não pode derrubar o app */ }
+    }
+
+    fun definirNotificacoes(ligadas: Boolean) {
+        definir(atual().copy(notificacoes = ligadas))
     }
 
     override fun onCleared() {

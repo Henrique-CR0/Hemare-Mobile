@@ -27,6 +27,7 @@ import com.example.hemaremobile.data.HemareStore
 import com.example.hemaremobile.data.definirServidor
 import com.example.hemaremobile.data.sincronizarComServidor
 import com.example.hemaremobile.domain.Datas
+import com.example.hemaremobile.services.Notificacoes
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -59,6 +60,10 @@ fun ConfiguracaoScreen(
     var sincronizando by remember { mutableStateOf(false) }
     var avisoServidor by remember { mutableStateOf("") }
     val contexto = LocalContext.current
+    var avisoNotificacao by remember { mutableStateOf("") }
+    val pedirNotificacoes = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { concedida ->
+        if (!concedida) avisoNotificacao = "❌ Sem a permissão do sistema, nenhum aviso aparece."
+    }
 
     fun sincronizar() {
         escopo.launch { sincronizando = true; avisoServidor = store.sincronizarComServidor().texto; sincronizando = false }
@@ -117,7 +122,19 @@ fun ConfiguracaoScreen(
             Rotulo("PREFERÊNCIAS")
             ItemSwitch(Icons.Filled.DarkMode, "Tema escuro", state.temaEscuro, viewModel::alternarTemaEscuro)
             Espaco(8)
-            ItemSwitch(Icons.Filled.Notifications, "Notificações", state.notificacoesAtivas, viewModel::alternarNotificacoes)
+            ItemSwitch(Icons.Filled.Notifications, "Notificações", estado.notificacoes) { ligar ->
+                store.definirNotificacoes(ligar)
+                avisoNotificacao = ""
+                if (ligar && !Notificacoes.permitido(contexto)) pedirNotificacoes.launch(Notificacoes.PERMISSAO)
+            }
+            if (estado.notificacoes) {
+                Dica("Avisa quando você puder doar de novo (se ligar o lembrete na sua área) e antes da doação agendada, mesmo com o app fechado.")
+                BotaoVazado("🔔 Enviar notificação de teste", {
+                    avisoNotificacao = if (Notificacoes.mostrar(contexto, 99, "Hemare 🩸", "Teste: é assim que os lembretes de doação aparecem."))
+                        "✅ Notificação enviada." else "❌ Permita as notificações para o Hemare nas configurações do aparelho."
+                })
+                Mensagem(avisoNotificacao)
+            }
             Espaco(8)
             ItemSwitch(Icons.Filled.Contrast, "Alto contraste", state.altoContraste, viewModel::alternarAltoContraste)
             Espaco(8)

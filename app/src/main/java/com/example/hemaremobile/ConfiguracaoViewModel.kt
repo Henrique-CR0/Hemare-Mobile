@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.update
 
 data class ConfiguracaoUiState(
     val temaEscuro: Boolean = true,
-    val notificacoesAtivas: Boolean = true,
     val altoContraste: Boolean = false,
     val librasAtivo: Boolean = false,
     /** Tamanho do texto: 0,9 a 1,3 vezes o tamanho do sistema (como o A− / A+ do site). */
@@ -27,10 +26,6 @@ class ConfiguracaoViewModel : ViewModel() {
 
     fun alternarTemaEscuro(ativo: Boolean) {
         _uiState.update { it.copy(temaEscuro = ativo) }
-    }
-
-    fun alternarNotificacoes(ativo: Boolean) {
-        _uiState.update { it.copy(notificacoesAtivas = ativo) }
     }
 
     fun alternarAltoContraste(ativo: Boolean) {
