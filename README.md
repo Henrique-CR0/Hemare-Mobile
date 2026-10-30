@@ -77,11 +77,25 @@ Verificação de hospitais (aprovar, recusar com motivo, revogar), coleta de not
 ### Configuração
 Tema claro/escuro, alto contraste, tamanho do texto (A− / A+), Libras (botão flutuante; a tradução não está embutida), notificações, conta e sair.
 
-## Dados e limites desta versão
+## Dados, banco e servidor
 
-- **Não há servidor**: contas e dados vivem na memória do app (dados de demonstração) e somem ao fechar. As regras de negócio foram portadas do backend do site para Kotlin puro (`domain/`).
-- Conexões reais: notícias (RSS), CEP (ViaCEP), GPS, compartilhar/WhatsApp/ligar e abrir mapa (aplicativo externo).
+- **Banco de dados local (SQLite):** contas, doações, agenda, campanhas e a sessão ficam guardados no aparelho (`data/local/BancoHemare.kt`, 15 tabelas) e voltam quando o app é reaberto. A senha é guardada só como resumo SHA-256.
+- **Servidor do Hemare (opcional):** em **Configuração → Servidor do Hemare**, informe o endereço do backend (ex.: `http://192.168.0.10:3000`). O app baixa locais, termômetro de estoque e notícias pela API (`data/api/ApiHemare.kt`, conforme o `docs/API.md` do site). Sem servidor, usa os dados do aparelho.
+- **Ainda não validado:** o cliente da API nunca falou com um servidor real, e o banco não foi testado em aparelho. Veja os riscos em [docs/STATUS.md](docs/STATUS.md).
+- Conexões diretas da internet: notícias (RSS), CEP (ViaCEP), GPS, compartilhar/WhatsApp/ligar e abrir mapa (aplicativo externo).
 - Contas de teste: `doador@hemare.com` / `doador123` · `hospital@hemare.com` / `hospital123` · `pendente@hemare.com` / `hospital123` (hospital em análise) · `admin@hemare.com` / `admin1234`.
+
+## Testes
+
+98 testes unitários (regras do domínio e a loja), todos passando:
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=C:\tmpjdk -Djava.io.tmpdir=C:\tmpjdk"
+.\gradlew.bat --offline --no-daemon :app:testDebugUnitTest
+```
+
+No Android Studio: botão direito em `app/src/test` → **Run Tests**. O **Status Report do desenvolvimento** está em [docs/STATUS.md](docs/STATUS.md).
 
 ## Estrutura do projeto
 
@@ -91,6 +105,8 @@ app/src/main/java/com/example/hemaremobile/
 ├── navigation/Navegacao.kt   # abas por tipo de conta, guarda de rotas (portões), destino de retorno
 ├── domain/                   # regras puras portadas do site (triagem, elegibilidade, agenda, gamificação...)
 ├── data/                     # Estado imutável, HemareStore (ViewModel), dados de exemplo, operações por papel, RSS e CEP
+│   ├── local/                # BancoHemare (SQLite) e CodecEstado (JSON das tabelas)
+│   └── api/                  # ApiHemare: cliente HTTP do backend do Hemare
 └── ui/                       # Rotas/portões/menu (Acesso.kt), componentes, telas (públicas, entrada, doador, hospital, admin), tema
 ```
 
@@ -107,8 +123,10 @@ $env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=C:\tmpjdk -Djava.io.tmpdir
 ## Roadmap
 
 - [x] Telas e regras equivalentes às do site (visitante, doador, hospital, admin)
-- [ ] Integração com a API do [backend Hemare](https://github.com/Henrique-CR0/Hemare/tree/main/backend) (hoje os dados são locais)
-- [ ] Persistência real de sessão, contas e preferências
+- [x] Banco de dados local e cliente da API (rotas públicas)
+- [x] 98 testes unitários e Status Report
+- [ ] Validar o cliente contra o backend e passar login, agenda e doações para a API
+- [ ] Testes de tela e testes instrumentais do banco
 - [ ] Mapa dentro do app e tradução real em Libras (VLibras)
 
 ## Autores

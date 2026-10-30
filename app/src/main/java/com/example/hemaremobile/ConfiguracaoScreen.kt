@@ -23,6 +23,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hemaremobile.data.Estado
+import com.example.hemaremobile.data.HemareStore
+import com.example.hemaremobile.data.definirServidor
+import com.example.hemaremobile.data.sincronizarComServidor
+import com.example.hemaremobile.domain.Datas
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import com.example.hemaremobile.data.TipoConta
 import com.example.hemaremobile.ui.componentes.*
 import com.example.hemaremobile.ui.theme.HemareVermelhoAcao
@@ -30,12 +39,17 @@ import com.example.hemaremobile.ui.theme.HemareVermelhoAcao
 @Composable
 fun ConfiguracaoScreen(
     viewModel: ConfiguracaoViewModel,
+    store: HemareStore,
     estado: Estado,
     onSair: () -> Unit,
     onEntrar: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val usuario = estado.usuario
+    val escopo = rememberCoroutineScope()
+    var endereco by remember { mutableStateOf(estado.servidor ?: "") }
+    var sincronizando by remember { mutableStateOf(false) }
+    var avisoServidor by remember { mutableStateOf("") }
 
     TelaLista("Configuração") {
         bloco {
@@ -59,6 +73,24 @@ fun ConfiguracaoScreen(
                     Espaco(8)
                     BotaoVazado("Sair", onSair)
                 }
+            }
+            Espaco(16)
+
+            Rotulo("SERVIDOR DO HEMARE")
+            Cartao {
+                Dica("Opcional. Com o endereço do backend do Hemare, o app baixa os locais, o termômetro de estoque e as notícias do servidor. Sem ele, usa os dados do aparelho.")
+                Espaco(8)
+                Campo(endereco, { endereco = it }, "Endereço do servidor", placeholder = "http://192.168.0.10:3000")
+                Espaco(8)
+                Botao(if (sincronizando) "Sincronizando..." else "🔄 Salvar e sincronizar", {
+                    if (!sincronizando) {
+                        store.definirServidor(endereco)
+                        if (endereco.isBlank()) avisoServidor = "✅ Servidor removido. O app usa os dados do aparelho."
+                        else escopo.launch { sincronizando = true; avisoServidor = store.sincronizarComServidor().texto; sincronizando = false }
+                    }
+                }, habilitado = !sincronizando)
+                Mensagem(avisoServidor)
+                estado.sincronizadoEm?.let { Dica("Última sincronização: ${Datas.haQuanto(it)}.") }
             }
             Espaco(16)
 

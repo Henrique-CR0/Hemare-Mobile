@@ -373,7 +373,7 @@ data class ItemEstoque(val tipo: String, val hospital: String, val cidade: Strin
 fun Estado.estoquePublico(): List<ItemEstoque> =
     hospitaisAprovados().flatMap { h ->
         (estoque[h.id] ?: emptyMap()).map { (tipo, nivel) -> ItemEstoque(tipo, hospitalNome(h.id), h.cidade, h.estado, nivel) }
-    }.sortedWith(compareBy({ Estoque.PESO[it.nivel] ?: 9 }, { it.cidade }, { it.tipo }))
+    }.plus(estoqueExterno).sortedWith(compareBy({ Estoque.PESO[it.nivel] ?: 9 }, { it.cidade }, { it.tipo }))
 
 data class ClimaCidade(val cidade: String, val estado: String, val clima: Estoque.Clima, val tipos: List<String>)
 

@@ -22,7 +22,7 @@ object Seed {
 
         fun usuario(nome: String, email: String, senha: String, tipo: TipoConta, criado: LocalDate): Int {
             val novo = id++
-            usuarios.add(Usuario(novo, nome, email, senha, tipo, criado))
+            usuarios.add(Usuario(novo, nome, email, Senhas.hash(senha, email), tipo, criado))
             return novo
         }
 

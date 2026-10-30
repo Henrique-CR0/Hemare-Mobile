@@ -343,3 +343,14 @@ object Gamificacao {
         return Placar(totalDoacoes, totalDoacoes * VIDAS_POR_DOACAO, linhas.sumOf { it.doadores }, cidades)
     }
 }
+
+/**
+ * Guarda da senha: o banco local nunca recebe a senha em texto. É um resumo SHA-256 com o e-mail como sal.
+ * (O site usa bcrypt no servidor; aqui é só o necessário para a conta de demonstração não ficar legível no aparelho.)
+ */
+object Senhas {
+    fun hash(senha: String, email: String): String {
+        val bytes = java.security.MessageDigest.getInstance("SHA-256").digest("hemare|${email.trim().lowercase()}|$senha".toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+}

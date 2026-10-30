@@ -98,7 +98,11 @@ data class Estado(
     val sessaoUsuarioId: Int?,
     val proximoId: Int,
     val avisoSessao: String? = null,
-    val indicacoes: Map<Int, Int> = emptyMap() // usuário recém-criado -> quem o convidou (vale quando completar o perfil)
+    val indicacoes: Map<Int, Int> = emptyMap(), // usuário recém-criado -> quem o convidou (vale quando completar o perfil)
+    /** Termômetro baixado do servidor do Hemare (hospitais que não existem neste aparelho). */
+    val estoqueExterno: List<ItemEstoque> = emptyList(),
+    val servidor: String? = null,
+    val sincronizadoEm: Long? = null
 ) {
     // ---------- sessão ----------
     val usuario: Usuario? get() = usuarios.firstOrNull { it.id == sessaoUsuarioId }

@@ -133,7 +133,7 @@ private fun AppDoPapel(
             composable(Rotas.INICIO) { InicioScreen(estado, ::ir) }
             composable(Rotas.LISTA) { ListaScreen(estado, ::ir) }
             composable(Rotas.CONFIGURACAO) {
-                ConfiguracaoScreen(configuracaoViewModel, estado, onSair = { store.sair() }, onEntrar = { ir(Rotas.CONTA) })
+                ConfiguracaoScreen(configuracaoViewModel, store, estado, onSair = { store.sair() }, onEntrar = { ir(Rotas.CONTA) })
             }
             composable(Rotas.LOCAIS) { LocaisScreen(estado) }
             composable(Rotas.ESTOQUE) { EstoqueScreen(estado, ::ir) }

@@ -2,6 +2,12 @@ package com.example.hemaremobile.data
 
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.hemaremobile.data.local.RepositorioEstado
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.example.hemaremobile.domain.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,14 +21,37 @@ import java.time.LocalDate
  * Ainda não há backend publicado, então tudo vive em memória a partir dos dados de exemplo (Seed). Trocar isto por chamadas
  * HTTP à API do site é o próximo passo (Repository/Data layer) e não muda as telas.
  */
-class HemareStore : ViewModel() {
-    private val _estado = MutableStateFlow(Seed.criar())
+class HemareStore(private val repositorio: RepositorioEstado? = null) : ViewModel() {
+    // Com banco: continua de onde parou (inclusive a sessão). Sem banco (testes): dados de exemplo em memória.
+    private val _estado = MutableStateFlow(repositorio?.carregar() ?: Seed.criar())
     val estado: StateFlow<Estado> = _estado.asStateFlow()
+    private var salvando: Job? = null
 
     private val codigosRecuperacao = mutableMapOf<String, Triple<String, Long, Int>>() // email -> (código, validade, tentativas erradas)
 
     fun atual(): Estado = _estado.value
-    fun definir(e: Estado) { _estado.value = e }
+    fun definir(e: Estado) {
+        _estado.value = e
+        if (repositorio != null) agendarGravacao(repositorio)
+    }
+
+    /** Grava no banco 300 ms depois da última mudança (várias mudanças seguidas viram uma gravação só). */
+    private fun agendarGravacao(repo: RepositorioEstado) {
+        salvando?.cancel()
+        salvando = viewModelScope.launch(Dispatchers.IO) {
+            delay(300)
+            gravar(repo)
+        }
+    }
+
+    override fun onCleared() {
+        repositorio?.let { gravar(it) }
+    }
+
+    /** Uma falha ao gravar (disco cheio, por exemplo) não pode derrubar o app: o estado em memória continua valendo. */
+    private fun gravar(repo: RepositorioEstado) {
+        try { repo.salvar(_estado.value) } catch (e: Exception) { /* tenta de novo na próxima mudança */ }
+    }
 
     /** Aplica uma mudança no estado de uma vez só. */
     inline fun mudar(bloco: (Estado) -> Estado) { definir(bloco(atual())) }
@@ -37,7 +66,7 @@ class HemareStore : ViewModel() {
         if (mail.isEmpty() || senha.isEmpty()) return Res.erro("Informe e-mail e senha.")
         val espera = Auth.bloqueio(mail)
         if (espera > 0) return Res.erro(Auth.mensagemDeEspera(espera))
-        val u = e.usuarios.firstOrNull { it.email == mail && it.senha == senha }
+        val u = e.usuarios.firstOrNull { it.email == mail && it.senha == Senhas.hash(senha, mail) }
         if (u == null) {
             Auth.registrarFalha(mail)
             return Res.erro("E-mail ou senha incorretos.")
@@ -70,7 +99,7 @@ class HemareStore : ViewModel() {
         val indicador = codigoConvite?.trim()?.uppercase()?.let { c -> e.doadores.values.firstOrNull { it.codigoIndicacao == c }?.id }
         definir(
             e.copy(
-                usuarios = e.usuarios + Usuario(id, nomeLimpo, mail, senha, TipoConta.DOADOR, Datas.hoje()),
+                usuarios = e.usuarios + Usuario(id, nomeLimpo, mail, Senhas.hash(senha, mail), TipoConta.DOADOR, Datas.hoje()),
                 proximoId = id + 1,
                 indicacoes = if (indicador != null) e.indicacoes + (id to indicador) else e.indicacoes
             )
@@ -102,7 +131,7 @@ class HemareStore : ViewModel() {
         val id = e.proximoId
         definir(
             e.copy(
-                usuarios = e.usuarios + Usuario(id, (n as Validacao.Ok).valor, mail, d.senha, TipoConta.HOSPITAL, Datas.hoje()),
+                usuarios = e.usuarios + Usuario(id, (n as Validacao.Ok).valor, mail, Senhas.hash(d.senha, mail), TipoConta.HOSPITAL, Datas.hoje()),
                 hospitais = e.hospitais + (id to Hospital(
                     id, d.cnpj, Documentos.digitos(d.cnes), d.cep, d.endereco.trim(), d.numero.trim(), d.bairro.trim(),
                     d.complemento.trim().ifEmpty { null }, d.cidade.trim(), d.estado, aprovado = false, motivoRecusa = null
@@ -144,7 +173,7 @@ class HemareStore : ViewModel() {
         if (s is Validacao.Erro) return Res.erro(s.mensagem)
         codigosRecuperacao.remove(mail)
         Auth.limparFalhas(mail)
-        definir(e.copy(usuarios = e.usuarios.map { if (it.id == u.id) it.copy(senha = novaSenha) else it }))
+        definir(e.copy(usuarios = e.usuarios.map { if (it.id == u.id) it.copy(senha = Senhas.hash(novaSenha, u.email)) else it }))
         return Res.ok("Senha redefinida! Agora é só entrar.")
     }
 
@@ -152,10 +181,10 @@ class HemareStore : ViewModel() {
         val e = atual()
         val u = e.usuario ?: return Res.erro("Entre na sua conta.")
         if (nova != confirmacao) return Res.erro("A confirmação não é igual à nova senha.")
-        if (u.senha != atualSenha) return Res.erro("A senha atual está incorreta.")
+        if (u.senha != Senhas.hash(atualSenha, u.email)) return Res.erro("A senha atual está incorreta.")
         val s = Auth.validarSenha(nova, u.email, u.nome)
         if (s is Validacao.Erro) return Res.erro(s.mensagem)
-        definir(e.copy(usuarios = e.usuarios.map { if (it.id == u.id) it.copy(senha = nova) else it }))
+        definir(e.copy(usuarios = e.usuarios.map { if (it.id == u.id) it.copy(senha = Senhas.hash(nova, u.email)) else it }))
         return Res.ok("Senha alterada. As outras sessões foram encerradas.")
     }
 
@@ -244,7 +273,7 @@ class HemareStore : ViewModel() {
         val e = atual()
         val u = e.usuario ?: return Res.erro("Entre na sua conta.")
         if (u.tipo != TipoConta.DOADOR) return Res.erro("Esta ação é só para contas de doador.")
-        if (u.senha != senha) return Res.erro("Senha incorreta.")
+        if (u.senha != Senhas.hash(senha, u.email)) return Res.erro("Senha incorreta.")
         definir(
             e.copy(
                 usuarios = e.usuarios.filter { it.id != u.id },

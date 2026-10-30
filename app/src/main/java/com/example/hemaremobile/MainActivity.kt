@@ -10,6 +10,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.hemaremobile.data.local.BancoHemare
 import com.example.hemaremobile.data.HemareStore
 import com.example.hemaremobile.navigation.HemareRaiz
 import com.example.hemaremobile.ui.theme.HemareMobileTheme
@@ -20,7 +23,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val configuracaoViewModel: ConfiguracaoViewModel = viewModel()
-            val store: HemareStore = viewModel()
+            val contexto = applicationContext
+            val store: HemareStore = viewModel(factory = viewModelFactory { initializer { HemareStore(BancoHemare(contexto)) } })
             val configuracaoState by configuracaoViewModel.uiState.collectAsState()
             val densidade = LocalDensity.current
 

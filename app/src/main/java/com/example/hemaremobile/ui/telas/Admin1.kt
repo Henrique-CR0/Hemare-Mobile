@@ -170,8 +170,16 @@ fun AdminStatusScreen(store: HemareStore, navegar: (String) -> Unit) {
             }
             Espaco(12)
             Cartao {
-                Titulo("📱 Sobre este app")
-                Dica("O app mobile reproduz as telas e as regras do site. Ainda não conversa com um servidor: as contas e os dados ficam só na memória do aparelho (demonstração), e as notícias e o CEP são lidos da internet.")
+                Titulo("📱 Situação do app mobile (docs/STATUS.md)")
+                Dica("Telas e regras equivalentes às do site. 98 testes unitários passando. Os dados ficam num banco SQLite do aparelho; a ligação com o servidor do Hemare existe (Configuração), mas ainda não foi testada contra um servidor real.")
+                Espaco(6)
+                listOf(
+                    "🟢 Funcionalidades" to "Visitante, doador, hospital e administrador.",
+                    "🟢 Testes" to "98 de 98 passando (regras e loja).",
+                    "🟡 Banco de dados" to "SQLite pronto, ainda sem teste em aparelho.",
+                    "🟡 API" to "Cliente escrito conforme docs/API.md, sem servidor para validar.",
+                    "🔴 Produção" to "Contas ainda não são compartilhadas entre pessoas."
+                ).forEach { (a, b) -> Espaco(6); Text(a, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface); Dica(b) }
             }
         }
     }
