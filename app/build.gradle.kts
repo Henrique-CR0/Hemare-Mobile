@@ -52,7 +52,7 @@ android {
                 override fun afterTest(descriptor: TestDescriptor, result: TestResult) {}
                 override fun afterSuite(suite: TestDescriptor, result: TestResult) {
                     if (suite.parent == null) {
-                        println("=== RESULTADO: ${result.resultType} — ${result.testCount} testes, ${result.successfulTestCount} passaram, ${result.failedTestCount} falharam, ${result.skippedTestCount} ignorados ===")
+                        println("=== RESULTADO: ${result.resultType} - ${result.testCount} testes, ${result.successfulTestCount} passaram, ${result.failedTestCount} falharam, ${result.skippedTestCount} ignorados ===")
                     }
                 }
             })

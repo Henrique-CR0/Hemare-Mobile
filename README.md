@@ -126,7 +126,7 @@ $env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=C:\tmpjdk -Djava.io.tmpdir
 .\gradlew.bat --offline --no-daemon :app:testDebugUnitTest --rerun
 ```
 
-O `--rerun` obriga a rodar de novo (sem ele, se nada mudou, o Gradle pula os testes e mostra só "up-to-date"). O terminal lista cada teste como `PASSED` e termina com o total: `RESULTADO: SUCCESS — 107 testes, 107 passaram`.
+O `--rerun` obriga a rodar de novo (sem ele, se nada mudou, o Gradle pula os testes e mostra só "up-to-date"). O terminal lista cada teste como `PASSED` e termina com o total: `RESULTADO: SUCCESS - 107 testes, 107 passaram`.
 
 No Android Studio: botão direito em `app/src/test` → **Run Tests**. O **Status Report do desenvolvimento** está em [docs/STATUS.md](docs/STATUS.md).
 
