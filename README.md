@@ -85,6 +85,21 @@ Tema claro/escuro, alto contraste, tamanho do texto (A− / A+), Libras (botão 
 - Conexões diretas da internet: notícias (RSS), CEP (ViaCEP), GPS, compartilhar/WhatsApp/ligar e abrir mapa (aplicativo externo).
 - Contas de teste: `doador@hemare.com` / `doador123` · `hospital@hemare.com` / `hospital123` · `pendente@hemare.com` / `hospital123` (hospital em análise) · `admin@hemare.com` / `admin1234`.
 
+### Demonstrar a integração com a API (servidor de demonstração)
+
+O backend real do site precisa de PostgreSQL. Para mostrar a integração sem ele, há um servidor de **demonstração** em Node (sem dependências) que responde, no formato do `docs/API.md`, as rotas que o app usa: `/saude`, `/locais`, `/hospital/estoque-publico`, `/noticias/feed` e `/auth/login`. Ele **não é** o backend do site.
+
+```bash
+node tools/servidor-demo/servidor.js 3000
+```
+
+1. Rode o app no emulador (versão debug, que aceita `http://`).
+2. Em **Configuração → Servidor do Hemare**, digite `http://10.0.2.2:3000` (`10.0.2.2` é o computador, visto de dentro do emulador).
+3. Toque em **Salvar e sincronizar**. No Android 17+ o sistema pede a permissão de dispositivos próximos (rede local): toque em **Allow**.
+4. O app mostra "Sincronizado: 3 locais, 4 níveis de estoque, 3 notícias", o terminal do servidor lista os pedidos, e os dados aparecem no banco (Database Inspector, tabelas `locais`, `estoque_externo` e `noticias`).
+
+Num celular real, use o IP do computador na mesma rede Wi-Fi (por exemplo `http://192.168.0.10:3000`).
+
 ## Testes
 
 98 testes unitários (regras do domínio e a loja), todos passando:

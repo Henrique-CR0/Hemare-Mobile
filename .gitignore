@@ -14,3 +14,6 @@
 .cxx
 local.properties
 .kotlin
+
+# Cópia do banco puxada do emulador (só para apresentação)
+/hemare-banco.db

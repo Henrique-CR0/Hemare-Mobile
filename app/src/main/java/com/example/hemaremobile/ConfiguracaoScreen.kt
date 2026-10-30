@@ -30,11 +30,19 @@ import com.example.hemaremobile.domain.Datas
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.content.ContextCompat
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.launch
 import com.example.hemaremobile.data.TipoConta
 import com.example.hemaremobile.ui.componentes.*
 import com.example.hemaremobile.ui.theme.HemareVermelhoAcao
+
+private const val PERMISSAO_REDE_LOCAL = "android.permission.ACCESS_LOCAL_NETWORK"
 
 @Composable
 fun ConfiguracaoScreen(
@@ -50,6 +58,17 @@ fun ConfiguracaoScreen(
     var endereco by remember { mutableStateOf(estado.servidor ?: "") }
     var sincronizando by remember { mutableStateOf(false) }
     var avisoServidor by remember { mutableStateOf("") }
+    val contexto = LocalContext.current
+
+    fun sincronizar() {
+        escopo.launch { sincronizando = true; avisoServidor = store.sincronizarComServidor().texto; sincronizando = false }
+    }
+
+    // No Android 17+, falar com um servidor da rede local (IP do computador) pede esta permissão. Se a pessoa negar,
+    // ainda tentamos: um servidor público com https não precisa dela.
+    val pedirRedeLocal = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { sincronizar() }
+    val precisaPerguntarRedeLocal = Build.VERSION.SDK_INT >= 37 &&
+        ContextCompat.checkSelfPermission(contexto, PERMISSAO_REDE_LOCAL) != PackageManager.PERMISSION_GRANTED
 
     TelaLista("Configuração") {
         bloco {
@@ -86,7 +105,8 @@ fun ConfiguracaoScreen(
                     if (!sincronizando) {
                         store.definirServidor(endereco)
                         if (endereco.isBlank()) avisoServidor = "✅ Servidor removido. O app usa os dados do aparelho."
-                        else escopo.launch { sincronizando = true; avisoServidor = store.sincronizarComServidor().texto; sincronizando = false }
+                        else if (precisaPerguntarRedeLocal) pedirRedeLocal.launch(PERMISSAO_REDE_LOCAL)
+                        else sincronizar()
                     }
                 }, habilitado = !sincronizando)
                 Mensagem(avisoServidor)
