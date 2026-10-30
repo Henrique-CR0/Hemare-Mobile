@@ -20,7 +20,7 @@ interface RepositorioEstado {
  * Banco SQLite do aparelho (sem bibliotecas extras). Cada entidade do site tem a sua tabela:
  * colunas de verdade para o que se consulta (e-mail, tipo, dono) e o restante em JSON.
  */
-class BancoHemare(contexto: Context, nome: String? = NOME) : SQLiteOpenHelper(contexto, nome, null, VERSAO), RepositorioEstado {
+class BancoHemare(private val contexto: Context, private val nomeDoBanco: String? = NOME) : SQLiteOpenHelper(contexto, nomeDoBanco, null, VERSAO), RepositorioEstado {
 
     override fun onConfigure(db: SQLiteDatabase) {
         db.setForeignKeyConstraintsEnabled(true)
@@ -51,10 +51,10 @@ class BancoHemare(contexto: Context, nome: String? = NOME) : SQLiteOpenHelper(co
     // ---------------------------------------------------------------------------------------------
 
     override fun carregar(): Estado? {
-        val db = readableDatabase
-        val meta = lerMeta(db)
-        if (meta["proximoId"] == null) return null // banco novo, nunca salvo
         return try {
+            val db = readableDatabase
+            val meta = lerMeta(db)
+            if (meta["proximoId"] == null) return null // banco novo, nunca salvo
             Estado(
                 usuarios = linhas(db, "usuarios", "ORDER BY id") { CodecEstado.usuario(it) },
                 doadores = linhas(db, "doadores", "ORDER BY id") { CodecEstado.doador(it) }.associateBy { it.id },
@@ -79,12 +79,19 @@ class BancoHemare(contexto: Context, nome: String? = NOME) : SQLiteOpenHelper(co
                 sincronizadoEm = meta["sincronizadoEm"]?.toLongOrNull()
             )
         } catch (e: Exception) {
-            null // dados ilegíveis: o app começa de novo com os dados de exemplo em vez de travar
+            // Banco ilegível ou pela metade (app fechado na criação): apaga o arquivo e começa de novo com os dados de exemplo.
+            recriar()
+            null
         }
     }
 
+    private fun recriar() {
+        try { close() } catch (e: Exception) { }
+        nomeDoBanco?.let { contexto.deleteDatabase(it) }
+    }
+
     override fun salvar(estado: Estado) {
-        val db = writableDatabase
+        val db = try { writableDatabase } catch (e: Exception) { recriar(); writableDatabase }
         db.beginTransaction()
         try {
             listOf("estoque_externo", "noticias", "pedidos_raros", "campanhas", "casos", "agendamentos", "vagas", "necessidades", "estoque", "doacoes", "locais", "hospitais", "doadores", "usuarios", "meta")
