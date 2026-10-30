@@ -1,67 +1,91 @@
 # Status Report do Desenvolvimento — Hemare Mobile
 
-> **Posição em 30/10/2026**, sobre a branch `developer`. Os **números** da seção 2 foram contados no código e na última execução dos testes (`gradlew :app:testDebugUnitTest`). O restante é análise escrita por uma pessoa e deve ser relida a cada rodada. O formato segue o `docs/STATUS.md` do site, e a tela **Admin → Status** do app mostra um resumo dele.
+> **Posição em 30/10/2026**, sobre a branch `developer` (commit `089a66a` e seguintes). Os **números** da seção 2 foram contados no código e na última execução dos testes (`gradlew :app:testDebugUnitTest`). A seção 4 diz **como cada coisa foi verificada**, e o restante é análise escrita por uma pessoa, que deve ser relida a cada rodada. O formato segue o `docs/STATUS.md` do site, e a tela **Admin → Status** do app mostra um resumo dele.
 
 ## 1. Resumo em 30 segundos
 
-**Saúde geral: 🟢 verde nas regras e nas telas, 🟡 amarelo na integração.** Todas as telas do site existem em formato mobile e as regras de negócio foram portadas e testadas. O app guarda os dados num banco SQLite do aparelho e tem um cliente da API do backend, mas **ainda não foi testado contra um servidor real** e o banco não foi exercitado em aparelho. Por isso ele serve hoje para **demonstração e piloto fechado**, não para publicação.
+**Saúde geral: 🟢 verde nas regras, nas telas e nos testes; 🟡 amarelo na integração com o backend real.**
+
+Todas as telas do site existem em formato mobile, com as mesmas regras de negócio, e 98 testes unitários passam. O app abre e navega num emulador Android 17. O banco SQLite é criado e preenchido no aparelho, e o cliente da API **sincronizou com sucesso** com um servidor de demonstração, gravando os dados no banco. **Falta validar com o backend real do site** (que exige PostgreSQL) e passar login, agenda e doações para a API: hoje as contas e as doações existem só no aparelho. Por isso o app serve para **demonstração e piloto fechado**, não para publicação.
 
 | Área | Situação | Em uma frase |
 |---|:-:|---|
-| Funcionalidades | 🟢 | Visitante, doador, hospital e administrador têm as mesmas telas e regras do site. |
-| Qualidade e testes | 🟢 | 98 testes unitários das regras e da loja, todos passando. Nenhum teste de tela ou de aparelho ainda. |
-| Banco de dados | 🟡 | SQLite local com tabelas por entidade; compila, mas não foi executado em emulador/celular nem coberto por teste. |
-| Integração com a API | 🟡 | Cliente HTTP com login, locais, estoque público e notícias, conforme `docs/API.md` do site; sem servidor para testar. |
-| Segurança e privacidade | 🟡 | Senha só como resumo SHA-256 no aparelho e privacidade do doador testada; o site usa bcrypt e token no servidor. |
-| Documentação | 🟢 | README, este relatório e comentários nas regras apontando o arquivo do site de onde vieram. |
+| Funcionalidades | 🟢 | Visitante, doador, hospital e administrador têm as telas e as regras do site. |
+| Qualidade e testes | 🟢 | 98 testes unitários das regras e da loja, todos passando. Sem teste de tela nem de aparelho. |
+| Banco de dados | 🟢 | SQLite com 15 tabelas, criado e preenchido no emulador. Falta provar a sessão ao reabrir o app e um teste automatizado. |
+| Integração com a API | 🟡 | Cliente funcionando contra um servidor de demonstração (4 rotas públicas); sem teste contra o backend real. |
+| Segurança e privacidade | 🟡 | Senha só como resumo SHA-256, privacidade do doador testada; o site usa bcrypt e token no servidor. |
+| Documentação | 🟢 | README, este relatório, roteiro de demonstração e comentários nas regras. |
 
 ## 2. Números
 
 | Indicador | Valor |
 |---|---|
-| Testes automáticos | **98 testes** em 21 classes (5 arquivos), **todos passando** ✅ (0 falhas, 0 ignorados) |
-| Código do app | 38 arquivos Kotlin · 7.937 linhas (antes do banco e da API) |
+| Testes automáticos | **98 testes** em 21 classes (5 arquivos), **todos passando** ✅ (0 falhas, 0 erros, 0 ignorados) |
+| Código do app | 38 arquivos Kotlin · 7.985 linhas (domínio 1.568 · dados 1.961 · telas e componentes 3.812) |
 | Código de testes | 808 linhas |
-| Telas | 38 rotas: públicas, de entrada, do doador, do hospital, do administrador, mais o portão de acesso |
+| Rotas de tela | 28 registradas na navegação (públicas, entrada, doador, hospital, administrador) |
 | Tabelas do banco | 15 (usuários, doadores, hospitais, locais, doações, estoque, necessidades, vagas, agendamentos, casos, campanhas, pedidos raros, notícias, estoque externo, meta) |
-| Rotas da API usadas | 4 de 91: `/auth/login`, `/locais`, `/hospital/estoque-publico` e `/noticias/feed` (mais `/saude` para conferir a conexão) |
-| Histórico | 18 commits locais; última publicação no GitHub: commit `003f31a` |
+| Rotas da API usadas pelo app | 4 na sincronização (`/locais`, `/hospital/estoque-publico`, `/noticias/feed`) mais `/saude`; `/auth/login` está implementada no cliente, mas **nenhuma tela a usa ainda**. O backend tem 91 rotas. |
+| Ambiente de teste | Emulador Pixel 10, Android 17 (API 37); AGP 9.3.2, Gradle 9.5.0, Kotlin 2.2.10 |
+| Histórico | 22 commits; tudo publicado no GitHub (`master` e `developer` iguais) |
 
 ## 3. O que foi entregue
 
 | Fase | O que o usuário ganhou |
 |---|---|
-| **Apresentação** (início do projeto) | Abas Início, Lista e Configuração, tema escuro, alto contraste, botão de Libras, login e painel de hospital simples. |
+| **Apresentação** | Abas Início, Lista e Configuração, tema escuro, alto contraste, botão de Libras, login e painel de hospital simples. |
 | **Domínio** | Regras do backend do site em Kotlin puro: triagem, elegibilidade, compatibilidade ABO/Rh, agenda, gamificação, apadrinhamento, campanhas, sangue raro, ficha PcD, notícias e cadeia de confiança (hash SHA-256). |
 | **Telas equivalentes ao site** | Navegação por tipo de conta com portões de acesso; doador (agenda, histórico, perfil, carteirinha, LGPD), hospital (estoque, necessidades, agenda, campanhas, raro, radar) e administrador (verificação, notícias, status). |
-| **Integração e testes** (esta rodada) | Banco SQLite com a sessão e os dados guardados entre aberturas; cliente da API com tela de servidor em Configuração; senhas guardadas só como resumo; 98 testes unitários. |
+| **Banco, API e testes** | Banco SQLite com sessão e dados guardados entre aberturas; cliente da API com tela de servidor em Configuração; senhas guardadas só como resumo; 98 testes unitários. |
+| **Verificação no emulador** | App aberto e navegado no Android 17; servidor de demonstração (`tools/servidor-demo`); sincronização comprovada de ponta a ponta; botões de ação fixos no rodapé de login, cadastro e completar perfil. |
 
-## 4. Como os componentes se ligam
+## 4. Como cada coisa foi verificada
 
-```
-Telas (Compose)  →  HemareStore (ViewModel, Estado imutável)  →  Regras do domínio (Kotlin puro)
-                          │
-                          ├── RepositorioEstado → BancoHemare (SQLite) ── grava 300 ms depois da última mudança
-                          └── ApiHemare (HTTP/JSON) → backend do Hemare (opcional, endereço em Configuração)
-```
+| Item | Como | Resultado |
+|---|---|---|
+| Regras de negócio e loja | 98 testes unitários na JVM | ✅ passam |
+| Compilação e instalação | `assembleDebug` e instalação no emulador Pixel 10 (Android 17) | ✅ |
+| Abertura e navegação | Uso manual: início, entrar, configuração, login, cadastro | ✅ |
+| Banco criado e preenchido | Database Inspector do Android Studio e leitura do arquivo `hemare.db`: 15 tabelas, 16 usuários, 15 doações, 210 vagas | ✅ |
+| Senha protegida | Leitura da coluna `senha`: só um resumo de 64 caracteres | ✅ |
+| Integração com a API | `GET /saude`, `/locais`, `/hospital/estoque-publico` e `/noticias/feed` vistos no terminal do servidor; 3 locais, 4 níveis de estoque e 3 notícias gravados no banco | ✅ contra servidor de demonstração |
+| Pedido da permissão de rede local | Caixa do sistema aparece, e a sincronização continua sozinha ao tocar em "Allow" | ✅ |
+| **Sessão volta ao reabrir o app** | Tentei por script e não concluí o login; **não foi confirmado** | ⚠️ pendente |
+| Backend real do site | Não há PostgreSQL nem Docker nesta máquina | ❌ não testado |
+| Build de lançamento (release) | Nunca gerado | ❌ não testado |
+| Testes de tela e do banco no aparelho | Não existem | ❌ não escritos |
 
-- As telas só leem o `Estado` e chamam operações da loja; nunca falam com o banco nem com a rede.
-- Sem servidor configurado, o app usa os dados do aparelho. Com servidor, **Configuração → Salvar e sincronizar** troca locais, termômetro de estoque e notícias pelos do servidor, mantendo as coordenadas que o servidor não envia.
-- Notícias também podem ser coletadas direto dos feeds RSS (Admin → Notícias), e o CEP vem do ViaCEP.
+## 5. Problemas encontrados e corrigidos nesta rodada
 
-## 5. Riscos e pendências
+| Problema | Causa | Correção |
+|---|---|---|
+| O app fechava ao abrir | O banco foi criado pela metade (emulador encerrado durante a criação) e a leitura falhava | O banco ilegível agora é apagado e recriado em vez de derrubar o app |
+| Sincronização dava "Não consegui falar com o servidor" | O Android 17 exige a permissão `ACCESS_LOCAL_NETWORK` para a rede local; o app a pede agora antes de sincronizar | Permissão declarada e pedida em tempo de execução |
+| `http://` bloqueado | O Android recusa tráfego sem HTTPS | Liberado **só na versão debug**; a de lançamento exige HTTPS |
+| Botão de ação sumia ao rolar | Ficava no fim da lista | Botão fixo no rodapé de login, cadastro e completar perfil |
+| Junção de locais perdia as coordenadas | Nomes com espaços diferentes não casavam | Comparação ignorando espaços e acentos (teste cobre) |
+
+## 6. Riscos e pendências
 
 | # | Risco | Gravidade | O que fazer |
 |---|---|:-:|---|
-| R1 | O cliente da API nunca falou com um servidor de verdade; os formatos foram lidos do código do backend, não observados. | 🟡 | Subir o backend (`npm start`), apontar o app para ele e conferir cada rota. Depois usar o login real em vez das contas locais. |
-| R2 | O banco SQLite não foi executado em aparelho nem tem teste (precisa de teste instrumentado). | 🟡 | Rodar no emulador, fechar e reabrir o app; escrever `androidTest` de salvar e carregar. |
-| R3 | Contas e dados de doação existem só no aparelho: nada é compartilhado entre pessoas. | 🔴 para produção | Passar login, agenda e doações para a API (a maior parte das 91 rotas ainda não é usada). |
-| R4 | Senha local com SHA-256 e sal fixo, não bcrypt; o banco não é criptografado. | 🟡 | Resolvido de verdade quando o login passar a ser do servidor (R3). |
+| R1 | O cliente da API só foi validado contra um **servidor de demonstração** escrito por nós; o backend real pode ter respostas diferentes. | 🟡 | Subir o backend (`npm start` com PostgreSQL), apontar o app para ele e conferir cada rota. |
+| R2 | Contas e doações existem só no aparelho: nada é compartilhado entre pessoas. | 🔴 para produção | Passar login (`/auth/login`), agenda e doações para a API. A maior parte das 91 rotas ainda não é usada. |
+| R3 | A sessão após reabrir o app não foi confirmada, e o banco não tem teste automatizado. | 🟡 | Ensaiar no emulador e escrever `androidTest` de salvar e carregar. |
+| R4 | Senha local com SHA-256 e sal fixo, não bcrypt; o banco não é criptografado. | 🟡 | Resolvido de verdade quando o login passar a ser do servidor (R2). |
 | R5 | A recuperação de senha mostra o código na tela (não há e-mail). | 🟡 | Usar `/recuperacao` do servidor. |
-| R6 | Não há teste de tela (Compose) nem de navegação; só regras e loja. | 🟡 | Adicionar testes de UI para os portões de acesso e para as abas por tipo de conta. |
-| R7 | O botão de Libras não traduz; o mapa abre um aplicativo externo. | 🟢 | Embutir o VLibras e um mapa na tela, se for prioridade. |
+| R6 | Sem teste de tela (Compose) nem de navegação. | 🟡 | Testar os portões de acesso e as abas por tipo de conta. |
+| R7 | O Android Studio sugere atualizar para AGP 9.5.0 e Gradle 9.6.0; não foi adotado nem testado. | 🟢 | Manter 9.3.2 / 9.5.0 até haver tempo para testar a atualização. |
+| R8 | O botão de Libras não traduz; o mapa abre um aplicativo externo. | 🟢 | Embutir o VLibras e um mapa na tela, se for prioridade. |
+| R9 | Os formulários longos (perfil do doador) ainda têm o botão "Salvar" no fim da rolagem. | 🟢 | Fixar o botão no rodapé dessas telas também. |
 
-## 6. Como rodar os testes
+## 7. Como demonstrar e como rodar
+
+- **App:** Android Studio → configuração `app` → ▶ no emulador `Pixel_10`.
+- **Servidor de demonstração:** `node tools/servidor-demo/servidor.js 3000`; no app, **Configuração → Servidor do Hemare → `http://10.0.2.2:3000` → Salvar e sincronizar**.
+- **Banco ao vivo:** View → Tool Windows → App Inspection → Database Inspector → `hemare.db`.
+- **Testes:**
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
@@ -69,11 +93,12 @@ $env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=C:\tmpjdk -Djava.io.tmpdir
 .\gradlew.bat --offline --no-daemon :app:testDebugUnitTest
 ```
 
-O relatório HTML fica em `app/build/reports/tests/testDebugUnitTest/index.html`. Os testes rodam na JVM, sem aparelho. Por isso não cobrem o que usa `org.json` ou o SQLite do Android (exportar dados, banco, respostas da API).
+O relatório HTML dos testes fica em `app/build/reports/tests/testDebugUnitTest/index.html`. Os testes rodam na JVM, sem aparelho, e por isso não cobrem o que usa `org.json` ou o SQLite do Android (exportar dados, banco, respostas da API).
 
-## 7. Próximos passos, em ordem
+## 8. Próximos passos, em ordem
 
-1. Rodar o app num emulador e conferir a persistência (R2).
-2. Subir o backend do site e validar o cliente da API (R1).
-3. Trocar login, agenda e doações para a API (R3, R4, R5).
-4. Testes de tela e testes instrumentados do banco (R2, R6).
+1. Ensaiar a sessão ao reabrir o app e escrever o teste do banco (R3).
+2. Subir o backend real do site e validar o cliente da API (R1).
+3. Trocar login, agenda e doações para a API (R2, R4, R5).
+4. Testes de tela e de navegação (R6).
+5. Fixar o botão "Salvar" no rodapé dos formulários longos (R9).
