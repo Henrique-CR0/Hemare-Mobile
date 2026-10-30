@@ -71,18 +71,26 @@ val CorAlerta = Color(0xFFE8112D)
 
 // ---------------------------------------------------------------- estrutura
 
-/** Tela rolável com o cabeçalho vermelho no topo. Cada bloco usa `bloco { }` (já com a margem lateral). */
+/**
+ * Tela rolável com o cabeçalho vermelho no topo. Cada bloco usa `bloco { }` (já com a margem lateral).
+ * `rodape` (opcional) fica fixo embaixo, sem rolar com o conteúdo: é o lugar dos botões de ação dos formulários.
+ */
 @Composable
-fun TelaLista(titulo: String, conteudo: LazyListScope.() -> Unit) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentPadding = PaddingValues(bottom = 28.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        item { CabecalhoVermelho(titulo = titulo) }
-        conteudo()
+fun TelaLista(titulo: String, rodape: (@Composable ColumnScope.() -> Unit)? = null, conteudo: LazyListScope.() -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            item { CabecalhoVermelho(titulo = titulo) }
+            conteudo()
+        }
+        if (rodape != null) {
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 8.dp, modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp), content = rodape)
+            }
+        }
     }
 }
 

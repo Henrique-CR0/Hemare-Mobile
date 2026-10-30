@@ -120,7 +120,13 @@ fun LoginScreen(
     var senha by remember { mutableStateOf("") }
     var mensagem by remember { mutableStateOf("") }
 
-    TelaLista("Entrar no Hemare") {
+    TelaLista("Entrar no Hemare", rodape = {
+        Botao("Entrar", {
+            val r = store.entrar(email, senha)
+            if (r.ok) aoEntrou(destino) else mensagem = r.texto
+        })
+        Mensagem(mensagem)
+    }) {
         bloco {
             Text("🩸", fontSize = 44.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Paragrafo("Bem-vindo(a) de volta! Acesse sua conta.", suave = true, centro = true)
@@ -128,12 +134,6 @@ fun LoginScreen(
             Campo(email, { email = it }, "Email", teclado = KeyboardType.Email)
             Espaco(8)
             Campo(senha, { senha = it }, "Senha", senha = true)
-            Espaco(12)
-            Botao("Entrar", {
-                val r = store.entrar(email, senha)
-                if (r.ok) aoEntrou(destino) else mensagem = r.texto
-            })
-            Mensagem(mensagem)
             BotaoTexto("Esqueceu a senha?", aoRecuperar, Modifier.fillMaxWidth())
             BotaoTexto("Não tem conta? Cadastre-se", aoCadastro, Modifier.fillMaxWidth())
             BotaoTexto("É um hospital ou hemocentro? Cadastre sua instituição", aoCadastroHospital, Modifier.fillMaxWidth())
@@ -163,7 +163,18 @@ fun CadastroScreen(store: HemareStore, destino: String?, convite: String?, aoCri
         if (criada) { delay(1400); aoCriada() }
     }
 
-    TelaLista("Criar sua conta") {
+    TelaLista("Criar sua conta", rodape = {
+        Botao("Cadastrar", {
+            emailTocado = true
+            if (nome.isBlank() || email.isBlank() || senha.isBlank()) { mensagem = "❌ Preencha todos os campos."; return@Botao }
+            if (!emailValido) { mensagem = "❌ Digite um email válido (ex: nome@email.com)."; return@Botao }
+            if (senha.length < 8) { mensagem = "❌ A senha deve ter pelo menos 8 caracteres."; return@Botao }
+            val r = store.cadastrarDoador(nome, email, senha, codigoConvite.ifBlank { null })
+            mensagem = if (r.ok) "✅ Conta criada! Redirecionando para o login..." else r.texto
+            if (r.ok) criada = true
+        })
+        Mensagem(mensagem)
+    }) {
         bloco {
             Text("🩸", fontSize = 44.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Paragrafo("Junte-se ao Hemare e ajude a salvar vidas.", suave = true, centro = true)
@@ -191,17 +202,6 @@ fun CadastroScreen(store: HemareStore, destino: String?, convite: String?, aoCri
             }
             Espaco(8)
             Campo(codigoConvite, { codigoConvite = it.uppercase().take(12) }, "Código de convite (opcional)", dica = "Se um amigo chamou você, digite o código dele.")
-            Espaco(12)
-            Botao("Cadastrar", {
-                emailTocado = true
-                if (nome.isBlank() || email.isBlank() || senha.isBlank()) { mensagem = "❌ Preencha todos os campos."; return@Botao }
-                if (!emailValido) { mensagem = "❌ Digite um email válido (ex: nome@email.com)."; return@Botao }
-                if (senha.length < 8) { mensagem = "❌ A senha deve ter pelo menos 8 caracteres."; return@Botao }
-                val r = store.cadastrarDoador(nome, email, senha, codigoConvite.ifBlank { null })
-                mensagem = if (r.ok) "✅ Conta criada! Redirecionando para o login..." else r.texto
-                if (r.ok) criada = true
-            })
-            Mensagem(mensagem)
             BotaoTexto("Já tem conta? Entrar", aoLogin, Modifier.fillMaxWidth())
             Espaco(8)
             AcessoResumo(TipoConta.DOADOR)
@@ -255,7 +255,14 @@ fun CadastroHospitalScreen(store: HemareStore, aoCadastrado: () -> Unit, aoLogin
         }
     }
 
-    TelaLista("Cadastrar hospital") {
+    TelaLista("Cadastrar hospital", rodape = {
+        Botao("Cadastrar hospital", {
+            val r = store.cadastrarHospital(HemareStore.DadosHospital(nome, email, senha, cnpj, cnes, cep, endereco, numero, bairro, complemento, cidade, estado))
+            mensagem = if (r.ok) "✅ Hospital cadastrado! Redirecionando..." else r.texto
+            if (r.ok) aoCadastrado()
+        })
+        Mensagem(mensagem)
+    }) {
         bloco {
             Text("🏥", fontSize = 44.sp, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
             Paragrafo("Cadastre sua instituição e encontre doadores.", suave = true, centro = true)
@@ -272,13 +279,6 @@ fun CadastroHospitalScreen(store: HemareStore, aoCadastrado: () -> Unit, aoLogin
             Campo(complemento, { complemento = it }, "Complemento (opcional)"); Espaco(8)
             Campo(cidade, { cidade = it }, "Cidade *"); Espaco(8)
             CampoSelecao("Estado (UF) *", estado, Estados.SIGLAS.map { it to it }, { estado = it })
-            Espaco(14)
-            Botao("Cadastrar hospital", {
-                val r = store.cadastrarHospital(HemareStore.DadosHospital(nome, email, senha, cnpj, cnes, cep, endereco, numero, bairro, complemento, cidade, estado))
-                mensagem = if (r.ok) "✅ Hospital cadastrado! Redirecionando..." else r.texto
-                if (r.ok) aoCadastrado()
-            })
-            Mensagem(mensagem)
             BotaoTexto("É doador? Cadastre-se aqui", aoLogin, Modifier.fillMaxWidth())
             Espaco(8)
             AcessoResumo(TipoConta.HOSPITAL)

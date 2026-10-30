@@ -95,7 +95,23 @@ fun CompletarPerfilScreen(store: HemareStore, aoConcluir: () -> Unit) {
 
     LaunchedEffect(pronto) { if (pronto) { delay(1200); aoConcluir() } }
 
-    TelaLista("Complete seu perfil") {
+    TelaLista("Complete seu perfil", rodape = {
+        Botao("Salvar perfil", {
+            when {
+                tipo.isEmpty() || sexo.isEmpty() || cidade.isBlank() -> mensagem = "❌ Preencha tipo sanguíneo, gênero e cidade."
+                cpf.isEmpty() || !Documentos.cpfValido(cpf) -> mensagem = "❌ Informe um CPF válido."
+                visibilidade == "identificado" && telefone.isBlank() -> mensagem = "❌ Para aparecer aos hospitais, informe um telefone de contato."
+                else -> {
+                    val r = store.salvarPerfil(
+                        FormPerfil(usuario.nome, nomeSocial, tipo, sexo.firstOrNull(), "", cidade, "", "", "", telefone, cpf, visibilidade, "", ""), null, false
+                    )
+                    mensagem = r.texto
+                    if (r.ok) pronto = true
+                }
+            }
+        })
+        Mensagem(mensagem)
+    }) {
         bloco {
             Paragrafo("Esses dados ajudam a te conectar a quem precisa.", suave = true)
             Espaco(12)
@@ -115,22 +131,6 @@ fun CompletarPerfilScreen(store: HemareStore, aoConcluir: () -> Unit) {
             Rotulo("PRIVACIDADE *")
             OpcaoRadio("🔒 Anônimo — você ajuda sem que hospitais vejam seu nome ou contato.", visibilidade == "anonimo") { visibilidade = "anonimo" }
             OpcaoRadio("👋 Identificado — autorizo hospitais compatíveis a verem meu nome e contato para me convocar.", visibilidade == "identificado") { visibilidade = "identificado" }
-            Espaco(12)
-            Botao("Salvar perfil", {
-                when {
-                    tipo.isEmpty() || sexo.isEmpty() || cidade.isBlank() -> mensagem = "❌ Preencha tipo sanguíneo, gênero e cidade."
-                    cpf.isEmpty() || !Documentos.cpfValido(cpf) -> mensagem = "❌ Informe um CPF válido."
-                    visibilidade == "identificado" && telefone.isBlank() -> mensagem = "❌ Para aparecer aos hospitais, informe um telefone de contato."
-                    else -> {
-                        val r = store.salvarPerfil(
-                            FormPerfil(usuario.nome, nomeSocial, tipo, sexo.firstOrNull(), "", cidade, "", "", "", telefone, cpf, visibilidade, "", ""), null, false
-                        )
-                        mensagem = r.texto
-                        if (r.ok) pronto = true
-                    }
-                }
-            })
-            Mensagem(mensagem)
         }
     }
 }
