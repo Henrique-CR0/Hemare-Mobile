@@ -120,15 +120,6 @@ $env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=C:\tmpjdk -Djava.io.tmpdir
 .\gradlew.bat --offline --no-daemon :app:assembleDebug
 ```
 
-## Roadmap
-
-- [x] Telas e regras equivalentes às do site (visitante, doador, hospital, admin)
-- [x] Banco de dados local e cliente da API (rotas públicas)
-- [x] 98 testes unitários e Status Report
-- [ ] Validar o cliente contra o backend e passar login, agenda e doações para a API
-- [ ] Testes de tela e testes instrumentais do banco
-- [ ] Mapa dentro do app e tradução real em Libras (VLibras)
-
 ## Autores
 
 - Henrique Carneiro Ribeiro
