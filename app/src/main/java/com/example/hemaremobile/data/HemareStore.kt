@@ -27,7 +27,8 @@ class HemareStore(
     private val aoMudar: ((Estado) -> Unit)? = null
 ) : ViewModel() {
     // Com banco: continua de onde parou (inclusive a sessão). Sem banco (testes): dados de exemplo em memória.
-    private val _estado = MutableStateFlow(repositorio?.carregar() ?: Seed.criar())
+    private val carregado: Estado? = repositorio?.carregar()
+    private val _estado = MutableStateFlow(carregado ?: Seed.criar())
     val estado: StateFlow<Estado> = _estado.asStateFlow()
     private var salvando: Job? = null
 
@@ -35,6 +36,8 @@ class HemareStore(
 
     fun atual(): Estado = _estado.value
     init {
+        // Banco novo: grava já os dados iniciais, em vez de esperar a primeira ação (senão as tabelas ficam vazias).
+        if (repositorio != null && carregado == null) agendarGravacao()
         aoMudar?.let { avisar(it) } // ao abrir o app, garante que os avisos de hoje estão agendados
     }
 
