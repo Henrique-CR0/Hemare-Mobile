@@ -364,7 +364,7 @@ fun ClimaScreen(estado: Estado, navegar: (String) -> Unit) {
 @Composable
 fun PlacarScreen(estado: Estado, navegar: (String) -> Unit) {
     val p = estado.placar()
-    fun f(n: Int) = "%,d".format(java.util.Locale("pt", "BR"), n)
+    fun f(n: Int) = "%,d".format(java.util.Locale.forLanguageTag("pt-BR"), n)
     TelaLista("Placar das cidades") {
         bloco { Paragrafo("As cidades onde os doadores do Hemare mais doaram sangue. Leve a sua cidade para o topo!", suave = true) }
         bloco {

@@ -1,6 +1,9 @@
 package com.example.hemaremobile
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,35 +18,46 @@ data class ConfiguracaoUiState(
 )
 
 /**
- * Presentation Layer: preferências guardadas só em memória (StateFlow),
- * sem persistência real — isso é responsabilidade da Data layer futura.
- * O tema escuro começa ativado (visual padrão do Hemare).
+ * Preferências de aparência e acessibilidade. Ficam guardadas no aparelho (SharedPreferences): quem escolheu
+ * tema claro, alto contraste ou texto maior não precisa escolher de novo a cada vez que abre o app.
+ * O tema escuro é o padrão (visual do Hemare).
  */
-class ConfiguracaoViewModel : ViewModel() {
+class ConfiguracaoViewModel(aplicacao: Application) : AndroidViewModel(aplicacao) {
 
-    private val _uiState = MutableStateFlow(ConfiguracaoUiState())
+    private val prefs: SharedPreferences = aplicacao.getSharedPreferences("configuracao", Context.MODE_PRIVATE)
+
+    private val _uiState = MutableStateFlow(
+        ConfiguracaoUiState(
+            temaEscuro = prefs.getBoolean(TEMA_ESCURO, true),
+            altoContraste = prefs.getBoolean(ALTO_CONTRASTE, false),
+            librasAtivo = prefs.getBoolean(LIBRAS, false),
+            escalaFonte = prefs.getFloat(ESCALA_FONTE, 1f).coerceIn(0.9f, 1.3f)
+        )
+    )
     val uiState: StateFlow<ConfiguracaoUiState> = _uiState.asStateFlow()
 
-    fun alternarTemaEscuro(ativo: Boolean) {
-        _uiState.update { it.copy(temaEscuro = ativo) }
+    private fun mudar(grava: SharedPreferences.Editor.() -> Unit, novo: (ConfiguracaoUiState) -> ConfiguracaoUiState) {
+        _uiState.update(novo)
+        prefs.edit().apply(grava).apply()
     }
 
-    fun alternarAltoContraste(ativo: Boolean) {
-        _uiState.update { it.copy(altoContraste = ativo) }
-    }
+    fun alternarTemaEscuro(ativo: Boolean) = mudar({ putBoolean(TEMA_ESCURO, ativo) }) { it.copy(temaEscuro = ativo) }
 
-    fun alternarLibras(ativo: Boolean) {
-        _uiState.update { it.copy(librasAtivo = ativo) }
-    }
+    fun alternarAltoContraste(ativo: Boolean) = mudar({ putBoolean(ALTO_CONTRASTE, ativo) }) { it.copy(altoContraste = ativo) }
+
+    fun alternarLibras(ativo: Boolean) = mudar({ putBoolean(LIBRAS, ativo) }) { it.copy(librasAtivo = ativo) }
 
     fun mudarFonte(passo: Int) {
-        _uiState.update {
-            val nova = Math.round((it.escalaFonte + passo * 0.1f) * 10f) / 10f
-            it.copy(escalaFonte = nova.coerceIn(0.9f, 1.3f))
-        }
+        val nova = (Math.round((_uiState.value.escalaFonte + passo * 0.1f) * 10f) / 10f).coerceIn(0.9f, 1.3f)
+        mudar({ putFloat(ESCALA_FONTE, nova) }) { it.copy(escalaFonte = nova) }
     }
 
-    fun restaurarFonte() {
-        _uiState.update { it.copy(escalaFonte = 1f) }
+    fun restaurarFonte() = mudar({ putFloat(ESCALA_FONTE, 1f) }) { it.copy(escalaFonte = 1f) }
+
+    private companion object {
+        const val TEMA_ESCURO = "tema_escuro"
+        const val ALTO_CONTRASTE = "alto_contraste"
+        const val LIBRAS = "libras"
+        const val ESCALA_FONTE = "escala_fonte"
     }
 }

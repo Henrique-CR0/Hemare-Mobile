@@ -21,7 +21,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -34,6 +37,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -318,16 +322,23 @@ fun PerguntaSimNao(texto: String, resposta: Boolean?, aoResponder: (Boolean) -> 
 fun Campo(
     valor: String, aoMudar: (String) -> Unit, rotulo: String, modifier: Modifier = Modifier,
     teclado: KeyboardType = KeyboardType.Text, senha: Boolean = false, aviso: String = "", dica: String = "",
-    linhas: Int = 1, habilitado: Boolean = true, placeholder: String = ""
+    linhas: Int = 1, habilitado: Boolean = true, placeholder: String = "",
+    /** Se informado, o botão do teclado vira "Concluído" e chama esta ação (ex.: entrar ao digitar a senha). */
+    aoConfirmar: (() -> Unit)? = null
 ) {
     var mostrar by remember { mutableStateOf(false) }
+    val foco = LocalFocusManager.current
     OutlinedTextField(
         value = valor, onValueChange = aoMudar, label = { Text(rotulo) }, enabled = habilitado,
         placeholder = if (placeholder.isNotEmpty()) ({ Text(placeholder) }) else null,
         singleLine = linhas == 1, minLines = linhas, maxLines = if (linhas == 1) 1 else linhas + 2,
         isError = aviso.isNotEmpty(),
         visualTransformation = if (senha && !mostrar) PasswordVisualTransformation() else VisualTransformation.None,
-        keyboardOptions = KeyboardOptions(keyboardType = if (senha) KeyboardType.Password else teclado),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = if (senha) KeyboardType.Password else teclado,
+            imeAction = when { aoConfirmar != null -> ImeAction.Done; linhas > 1 -> ImeAction.Default; else -> ImeAction.Next }
+        ),
+        keyboardActions = KeyboardActions(onDone = { foco.clearFocus(); aoConfirmar?.invoke() }),
         trailingIcon = if (senha) ({
             IconButton(onClick = { mostrar = !mostrar }) {
                 Icon(if (mostrar) Icons.Filled.VisibilityOff else Icons.Filled.Visibility, contentDescription = if (mostrar) "Ocultar senha" else "Mostrar senha")
@@ -354,7 +365,7 @@ fun CampoSelecao(rotulo: String, valor: String, opcoes: List<Pair<String, String
             value = atual, onValueChange = {}, readOnly = true, label = { Text(rotulo) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = aberto) },
             colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = MaterialTheme.colorScheme.primary),
-            modifier = Modifier.fillMaxWidth().menuAnchor()
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
         )
         ExposedDropdownMenu(expanded = aberto, onDismissRequest = { aberto = false }) {
             opcoes.forEach { (v, r) ->

@@ -52,6 +52,19 @@ object Cadeia {
         val conteudo = "$hashAnterior|$doadorId|$hospitalId|$data"
         return MessageDigest.getInstance("SHA-256").digest(conteudo.toByteArray()).joinToString("") { "%02x".format(it) }
     }
+
+    data class Elo(val id: Int, val doadorId: Int, val hospitalId: Int, val data: LocalDate, val hash: String)
+    data class Resultado(val total: Int, val integra: Boolean, val primeiroInvalidoId: Int?)
+
+    /** Recalcula a cadeia inteira, na ordem das doações: qualquer registro alterado ou apagado quebra o resto. */
+    fun verificar(elos: List<Elo>): Resultado {
+        var anterior = GENESIS
+        for (e in elos.sortedBy { it.id }) {
+            if (calcularHash(anterior, e.doadorId, e.hospitalId, e.data) != e.hash) return Resultado(elos.size, false, e.id)
+            anterior = e.hash
+        }
+        return Resultado(elos.size, true, null)
+    }
 }
 
 enum class StatusVerificacao { PENDENTE, APROVADO, RECUSADO }

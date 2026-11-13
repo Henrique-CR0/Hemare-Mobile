@@ -50,6 +50,9 @@ fun HemareStore.ocultarNoticia(id: Int): Res {
     return Res.ok("Notícia escondida do feed.")
 }
 
+/** Auditoria pública da cadeia de confiança das doações. */
+fun Estado.verificarCadeia(): Cadeia.Resultado = Cadeia.verificar(doacoes.map { Cadeia.Elo(it.id, it.doadorId, it.hospitalId, it.data, it.hash) })
+
 fun Estado.noticiasVisiveis(): List<Noticia> = noticias.filter { it.id !in noticiasOcultas }
 
 /** Números de uso para a página "Status do desenvolvimento" (só números, nenhum dado de pessoa). */

@@ -298,10 +298,12 @@ class HemareStore(
             e.copy(
                 usuarios = e.usuarios.filter { it.id != u.id },
                 doadores = e.doadores - u.id,
-                doacoes = e.doacoes.map { if (it.doadorId == u.id) it.copy(doadorId = 0) else it },
-                agendamentos = e.agendamentos.filter { it.doadorId != u.id || it.status != "agendado" }.map { if (it.doadorId == u.id) it.copy(doadorId = 0) else it },
+                // As doações ficam com o mesmo id (sem nenhum dado pessoal): o hash de cada doação foi calculado com ele,
+                // e trocar o id quebraria a cadeia de auditoria. É o que o site faz ("Conta removida").
+                doacoes = e.doacoes,
+                agendamentos = e.agendamentos.filter { it.doadorId != u.id || it.status != "agendado" },
                 casos = e.casos.map { it.copy(padrinhos = it.padrinhos - u.id) },
-                campanhas = e.campanhas.map { c -> c.copy(promessas = c.promessas.filter { it.doadorId != u.id || it.confirmada }.map { if (it.doadorId == u.id) it.copy(doadorId = 0) else it }) },
+                campanhas = e.campanhas.map { c -> c.copy(promessas = c.promessas.filter { it.doadorId != u.id || it.confirmada }) },
                 sessaoUsuarioId = null
             )
         )

@@ -156,6 +156,15 @@ fun AdminStatusScreen(store: HemareStore, navegar: (String) -> Unit) {
             }
             Espaco(12)
             Cartao {
+                val cadeia = estado.verificarCadeia()
+                Titulo("🔗 Cadeia de confiança das doações")
+                Espaco(4)
+                if (cadeia.integra) Selo("✅ Íntegra: ${cadeia.total} doações conferidas", HemareVerde)
+                else Selo("⚠️ Inconsistência na doação nº ${cadeia.primeiroInvalidoId}", CorAlerta)
+                Dica("Cada doação guarda um hash ligado ao da anterior. Se alguém alterar ou apagar uma, a conferência acusa.")
+            }
+            Espaco(12)
+            Cartao {
                 Titulo("🚦 Situação do projeto (relatório de 30/10/2026)")
                 Dica("Resumo do docs/STATUS.md do site. O relatório completo fica no repositório.")
                 Espaco(6)

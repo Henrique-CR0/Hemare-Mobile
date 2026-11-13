@@ -8,9 +8,9 @@ import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.LocalHospital
-import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -21,6 +21,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +44,7 @@ import androidx.navigation.navArgument
 import com.example.hemaremobile.BotaoLibrasFlutuante
 import com.example.hemaremobile.ConfiguracaoScreen
 import com.example.hemaremobile.ConfiguracaoViewModel
+import com.example.hemaremobile.LocalVoltar
 import com.example.hemaremobile.data.Estado
 import com.example.hemaremobile.data.HemareStore
 import com.example.hemaremobile.data.TipoConta
@@ -57,11 +59,11 @@ private data class Aba(val rota: String, val rotulo: String, val icone: ImageVec
 private val ROTAS_CONTA_VISITANTE = setOf(Rotas.CONTA, Rotas.LOGIN, Rotas.CADASTRO, Rotas.CADASTRO_HOSPITAL, Rotas.RECUPERAR_SENHA)
 
 private val ABA_INICIO = Aba(Rotas.INICIO, "Início", Icons.Filled.Home)
-private val ABA_LISTA = Aba(Rotas.LISTA, "Lista", Icons.Filled.List)
+private val ABA_LISTA = Aba(Rotas.LISTA, "Lista", Icons.AutoMirrored.Filled.List)
 private val ABA_CONFIG = Aba(Rotas.CONFIGURACAO, "Configuração", Icons.Filled.Settings)
 
 private fun abasDe(papel: TipoConta?): List<Aba> = when (papel) {
-    null -> listOf(ABA_INICIO, ABA_LISTA, Aba(Rotas.CONTA, "Entrar", Icons.Filled.Login, ROTAS_CONTA_VISITANTE), ABA_CONFIG)
+    null -> listOf(ABA_INICIO, ABA_LISTA, Aba(Rotas.CONTA, "Entrar", Icons.AutoMirrored.Filled.Login, ROTAS_CONTA_VISITANTE), ABA_CONFIG)
     TipoConta.DOADOR -> listOf(
         ABA_INICIO, ABA_LISTA,
         Aba(Rotas.AREA_DOADOR, "Minha área", Icons.Filled.Person, setOf(Rotas.AREA_DOADOR, Rotas.MEU_PERFIL, Rotas.MINHAS_DOACOES, Rotas.COMPLETAR_PERFIL)),
@@ -127,7 +129,14 @@ private fun AppDoPapel(
     /** Depois de entrar ou cadastrar: o destino de retorno (se for do app) vale na conta nova. */
     fun entrou(destino: String?, padrao: String? = null) = definirDestino(Rotas.destinoSeguro(destino, padrao))
 
+    // Botão Voltar no cabeçalho de toda tela que não é a raiz de uma aba e foi aberta por cima de outra.
+    val entradaAtual by nav.currentBackStackEntryAsState()
+    val raizesDeAba = remember(papel) { abas.map { it.rota }.toSet() }
+    val voltar: (() -> Unit)? =
+        if (base(entradaAtual?.destination?.route) !in raizesDeAba && nav.previousBackStackEntry != null) ({ nav.popBackStack() }) else null
+
     Scaffold(bottomBar = { BarraDeAbas(nav, abas) }) { espaco ->
+      CompositionLocalProvider(LocalVoltar provides voltar) {
         NavHost(nav, startDestination = Rotas.inicialDe(papel), modifier = Modifier.padding(espaco)) {
             // ---- públicas ----
             composable(Rotas.INICIO) { InicioScreen(estado, ::ir) }
@@ -198,6 +207,7 @@ private fun AppDoPapel(
             }
             composable(Rotas.RECUPERAR_SENHA) { RecuperarSenhaScreen(store, aoVoltarLogin = { ir(Rotas.login()) }) }
         }
+      }
     }
 }
 

@@ -120,11 +120,13 @@ fun LoginScreen(
     var senha by remember { mutableStateOf("") }
     var mensagem by remember { mutableStateOf("") }
 
+    fun tentar() {
+        val r = store.entrar(email, senha)
+        if (r.ok) aoEntrou(destino) else mensagem = r.texto
+    }
+
     TelaLista("Entrar no Hemare", rodape = {
-        Botao("Entrar", {
-            val r = store.entrar(email, senha)
-            if (r.ok) aoEntrou(destino) else mensagem = r.texto
-        })
+        Botao("Entrar", { tentar() })
         Mensagem(mensagem)
     }) {
         bloco {
@@ -133,7 +135,7 @@ fun LoginScreen(
             Espaco(16)
             Campo(email, { email = it }, "Email", teclado = KeyboardType.Email)
             Espaco(8)
-            Campo(senha, { senha = it }, "Senha", senha = true)
+            Campo(senha, { senha = it }, "Senha", senha = true, aoConfirmar = { tentar() })
             BotaoTexto("Esqueceu a senha?", aoRecuperar, Modifier.fillMaxWidth())
             BotaoTexto("Não tem conta? Cadastre-se", aoCadastro, Modifier.fillMaxWidth())
             BotaoTexto("É um hospital ou hemocentro? Cadastre sua instituição", aoCadastroHospital, Modifier.fillMaxWidth())
