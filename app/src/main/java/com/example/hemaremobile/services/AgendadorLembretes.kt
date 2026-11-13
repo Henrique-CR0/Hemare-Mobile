@@ -57,7 +57,9 @@ class LembreteReceiver : BroadcastReceiver() {
 class ReinicioReceiver : BroadcastReceiver() {
     override fun onReceive(contexto: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
-        val estado = BancoHemare(contexto).use { it.carregar() } ?: return
+        // try/finally em vez de `use`: o SQLiteOpenHelper só é AutoCloseable a partir do Android 13 e o app roda desde o 8.
+        val banco = BancoHemare(contexto)
+        val estado = try { banco.carregar() } finally { banco.close() } ?: return
         AgendadorLembretes(contexto).reagendar(estado)
     }
 }

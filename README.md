@@ -118,7 +118,7 @@ Para ver a notificação funcionando: **Configuração → Notificações → �
 
 ## Testes
 
-107 testes unitários (regras do domínio e a loja), todos passando:
+118 testes unitários e de integração (regras do domínio e a loja), todos passando:
 
 ```powershell
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
@@ -126,9 +126,24 @@ $env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=C:\tmpjdk -Djava.io.tmpdir
 .\gradlew.bat --offline --no-daemon :app:testDebugUnitTest --rerun
 ```
 
-O `--rerun` obriga a rodar de novo (sem ele, se nada mudou, o Gradle pula os testes e mostra só "up-to-date"). O terminal lista cada teste como `PASSED` e termina com o total: `RESULTADO: SUCCESS - 107 testes, 107 passaram`.
+O `--rerun` obriga a rodar de novo (sem ele, se nada mudou, o Gradle pula os testes e mostra só "up-to-date"). O terminal lista cada teste como `PASSED` e termina com o total: `RESULTADO: SUCCESS - 118 testes, 118 passaram`.
 
 No Android Studio: botão direito em `app/src/test` → **Run Tests**. O **Status Report do desenvolvimento** está em [docs/STATUS.md](docs/STATUS.md).
+
+### Testes de integração no emulador
+
+Além dos testes da JVM (que incluem 11 "jornadas" atravessando vários componentes), há testes que usam o Android de verdade (SQLite, alarmes, notificações). Com o emulador ligado:
+
+```powershell
+.\gradlew.bat --no-daemon --no-configuration-cache :app:connectedDebugAndroidTest
+```
+
+(Sem `--offline`: a primeira vez baixa uma ferramenta de teste do Google. O `--no-configuration-cache` é necessário porque essa tarefa do Android não é compatível com o cache.)
+
+### Homologação e testes com usuários
+
+- `docs/HOMOLOGACAO.md`: o que foi verificado, como e o que falta, com os defeitos encontrados e o parecer.
+- `docs/TESTES_COM_USUARIOS.md`: roteiro pronto para aplicar com pessoas (tarefas, registro e questionário SUS). Ainda não foi aplicado.
 
 ## Estrutura do projeto
 

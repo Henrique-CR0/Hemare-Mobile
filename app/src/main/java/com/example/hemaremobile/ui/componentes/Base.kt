@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -58,6 +59,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -267,11 +269,21 @@ fun ChipsLinha(conteudo: @Composable () -> Unit) {
 /** Abas dentro de uma tela (ex.: Dados e privacidade | Saúde e doação | Carteirinha | Segurança). */
 @Composable
 fun SubAbas(abas: List<Pair<String, String>>, atual: String, aoTrocar: (String) -> Unit) {
-    Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        abas.forEach { (id, rotulo) -> Chip(rotulo, atual == id) { aoTrocar(id) } }
+    val rolagem = rememberScrollState()
+    Box {
+        Row(
+            modifier = Modifier.horizontalScroll(rolagem).padding(horizontal = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            abas.forEach { (id, rotulo) -> Chip(rotulo, atual == id) { aoTrocar(id) } }
+        }
+        // Dica visual: há mais abas à direita (antes elas só ficavam cortadas, sem indicar que dá para deslizar).
+        if (rolagem.canScrollForward) {
+            Box(
+                Modifier.align(Alignment.CenterEnd).width(36.dp).height(40.dp)
+                    .background(Brush.horizontalGradient(listOf(Color.Transparent, MaterialTheme.colorScheme.background)))
+            )
+        }
     }
 }
 

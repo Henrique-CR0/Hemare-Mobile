@@ -165,29 +165,15 @@ fun AdminStatusScreen(store: HemareStore, navegar: (String) -> Unit) {
             }
             Espaco(12)
             Cartao {
-                Titulo("🚦 Situação do projeto (relatório de 30/10/2026)")
-                Dica("Resumo do docs/STATUS.md do site. O relatório completo fica no repositório.")
-                Espaco(6)
-                listOf(
-                    "🟢 Funcionalidades" to "Tudo do roadmap pronto, menos a expansão de fontes de notícias.",
-                    "🟢 Qualidade e testes" to "1.325 verificações no site, todas passando.",
-                    "🟡 Segurança e privacidade" to "Falta tirar o token do localStorage e verificar o e-mail no cadastro.",
-                    "🟡 Operação" to "Envio de e-mail ainda usa o remetente de teste.",
-                    "🟡 Conteúdo e dados" to "Locais só de hemocentros públicos de capitais.",
-                    "🟢 Documentação" to "API, arquitetura, acesso por tipo de conta e notícias."
-                ).forEach { (a, b) -> Espaco(6); Text(a, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface); Dica(b) }
-            }
-            Espaco(12)
-            Cartao {
                 Titulo("📱 Situação do app mobile (docs/STATUS.md)")
-                Dica("Telas e regras equivalentes às do site. 98 testes unitários passando. Os dados ficam num banco SQLite do aparelho; a ligação com o servidor do Hemare existe (Configuração), mas ainda não foi testada contra um servidor real.")
+                Dica("Telas e regras equivalentes às do site. Os dados ficam num banco SQLite do aparelho; a ligação com o servidor do Hemare existe (Configuração), mas só foi testada contra um servidor de demonstração. Relatório completo em docs/STATUS.md.")
                 Espaco(6)
                 listOf(
                     "🟢 Funcionalidades" to "Visitante, doador, hospital e administrador.",
-                    "🟢 Testes" to "98 de 98 passando (regras e loja).",
-                    "🟡 Banco de dados" to "SQLite pronto, ainda sem teste em aparelho.",
-                    "🟡 API" to "Cliente escrito conforme docs/API.md, sem servidor para validar.",
-                    "🔴 Produção" to "Contas ainda não são compartilhadas entre pessoas."
+                    "🟢 Testes" to "118 testes na JVM (regras, loja e jornadas) e 12 no emulador (banco, sessão, API, alarmes e notificação), todos passando.",
+                    "🟢 Banco de dados" to "SQLite testado no emulador: salvar, carregar, sessão ao reabrir e senha só como resumo.",
+                    "🟡 API" to "Cliente funciona contra o servidor de demonstração; falta validar com o backend real do site.",
+                    "🔴 Produção" to "Contas e doações ainda não são compartilhadas entre pessoas."
                 ).forEach { (a, b) -> Espaco(6); Text(a, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface); Dica(b) }
             }
         }
